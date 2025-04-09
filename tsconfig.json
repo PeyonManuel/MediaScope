@@ -1,0 +1,20 @@
+// tsconfig.node.json
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "jsx": "react",
+    // --- Essential Flags for Referenced Node Config ---
+    "composite": true, // Required for project references
+    // "noEmit": false,             // Explicitly allow emitting (or just remove the noEmit line) - ensure it's NOT true
+    "module": "ESNext", // Use modern modules
+    "moduleResolution": "Node", // Or "NodeNext" / "Bundler" - how Node finds modules
+    "allowSyntheticDefaultImports": true, // For compatibility
+
+    // --- Other Recommended Options ---
+    "strict": true,
+    "skipLibCheck": true
+    // Add other necessary options...
+  },
+  // Include the specific Node.js files this config is responsible for
+  "include": ["vite.config.ts", "src", "env.d.ts"]
+}
