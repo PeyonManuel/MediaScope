@@ -1,0 +1,225 @@
+/* src/features/auth/LoginPage.module.css */
+/* ONLY includes layout, structure, and uses GLOBAL CSS Variables for theme */
+
+.container {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  /* Background comes from global :root or html.dark */
+}
+
+.formWrapper {
+  width: 100%;
+  max-width: 28rem;
+  background-color: var(--bg-form); /* Use global variable */
+  color: var(--text-primary); /* Use global variable */
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 2.5rem;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Spacing helpers */
+.formWrapper > * + * {
+  margin-top: 2rem;
+}
+.form > * + * {
+  margin-top: 1.5rem;
+}
+.inputGroup > * + * {
+  margin-top: 1rem;
+}
+
+/* --- Elements --- */
+.logoContainer {
+  display: flex;
+  justify-content: center;
+}
+.logoPlaceholder {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  color: var(--text-logo); /* Use global variable */
+}
+
+.heading {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-heading); /* Use global variable */
+}
+
+.form {
+  margin-top: 2rem;
+}
+.inputGroup {
+  border-radius: var(--border-radius-md);
+}
+
+.inputContainer {
+  position: relative;
+  /* Adjust margin/padding as needed if removing .inputGroup */
+  margin-bottom: 1.5rem; /* Add space below each field */
+}
+
+.inputField {
+  position: relative;
+  display: block;
+  width: 100%;
+  appearance: none;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  /* Ensure enough padding, especially top, for floated label */
+  padding: 1rem 0.75rem 0.5rem 0.75rem; /* Example: More padding top/bottom */
+  color: var(--text-input);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+/* Hide the actual placeholder text (we use a space ' ' in HTML) */
+.inputField::placeholder {
+  color: transparent;
+}
+
+.label {
+  position: absolute;
+  left: 0.75rem; /* Align with input horizontal padding */
+  top: 0.875rem; /* Vertically centered with initial padding */
+  font-size: 0.875rem; /* Match input font size */
+  color: var(--text-placeholder);
+  pointer-events: none; /* Clicks pass through to input */
+  transition:
+    top 0.2s ease,
+    font-size 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+  transform-origin: left center;
+  /* Ensure label is above input field visually if needed, though positioning usually handles it */
+  /* z-index: 1; */
+  /* Initially no background cut-out */
+  padding: 0;
+  background-color: transparent;
+}
+
+/* --- The "Float" Effect --- */
+/* Trigger when input is focused OR when it has a value and is valid */
+/* The placeholder=" " combined with :not(:placeholder-shown) is a robust way */
+/* Alternatively use :valid if input is 'required' */
+.inputField:focus + .label,
+.inputField:not(:placeholder-shown) + .label {
+  top: 0.25rem; /* Move label up */
+  font-size: 0.75rem; /* Make label smaller */
+  color: var(--text-secondary); /* Default floated text color */
+  padding: 0 0.25rem; /* Horizontal padding for the background cut-out */
+  /* Optional: slightly move left if needed with padding */
+  /* left: 0.6rem; */
+}
+
+/* Change floated label color when input is focused */
+.inputField:focus + .label {
+  color: var(--border-focus); /* Use focus color */
+}
+
+.optionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.forgotPasswordLink a {
+  font-weight: 500;
+  color: var(--text-link); /* Use global variable */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.forgotPasswordLink a:hover {
+  color: var(--text-link-hover); /* Use global variable */
+}
+
+.button {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--border-radius-md);
+  border: 1px solid transparent;
+  background-color: var(--bg-button); /* Use global variable */
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--text-button); /* Use global variable */
+  cursor: pointer;
+  transition: background-color 150ms ease-in-out;
+}
+.button:hover:not(:disabled) {
+  background-color: var(--bg-button-hover); /* Use global variable */
+}
+.button:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--button-focus-shadow); /* Use global variable */
+}
+.button:disabled {
+  cursor: not-allowed;
+  background-color: var(--bg-button-disabled); /* Use global variable */
+  opacity: 0.7;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  height: 1.25rem;
+  width: 1.25rem;
+  margin-right: 0.75rem;
+  color: inherit; /* Inherit color from button */
+  border-width: 2px;
+  border-style: solid;
+  border-color: transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.createAccountLink {
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--text-secondary); /* Use global variable */
+}
+.createAccountLink a {
+  font-weight: 500;
+  color: var(--text-link);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.createAccountLink a:hover {
+  color: var(--text-link-hover);
+}
+
+.errorMessage {
+  border: 1px solid var(--border-error); /* Use global variable */
+  background-color: var(--bg-error); /* Use global variable */
+  color: var(--text-error); /* Use global variable */
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  border-radius: var(--border-radius-md);
+}

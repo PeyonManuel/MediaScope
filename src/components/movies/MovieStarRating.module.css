@@ -1,0 +1,72 @@
+/* src/components/ui/StarRating.module.css */
+.starRatingContainer {
+  display: inline-flex; /* Changed from flex to inline-flex */
+  align-items: center;
+  gap: 0.1rem; /* Small gap between stars */
+  --star-empty-color: var(--brand-gray-300);
+  --star-fill-color: var(--brand-pink-default); /* Or a yellow/gold */
+  --star-stroke-color: transparent; /* Optional star outline */
+}
+
+.dark .starRatingContainer {
+  --star-empty-color: var(--brand-gray-600);
+}
+
+.starRatingContainer.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.starWrapper {
+  display: inline-flex; /* Display halves side-by-side */
+  position: relative; /* Needed if using absolute positioning for halves */
+  line-height: 0; /* Prevent extra space */
+  margin-right: 2px; /* Spacing between full stars */
+}
+
+.starHalf {
+  display: inline-block;
+  width: calc(var(--star-icon-size, 1.5rem) / 2); /* Half the width */
+  height: var(--star-icon-size, 1.5rem);
+  overflow: hidden; /* Clip the SVG */
+  cursor: pointer;
+  color: var(--star-fill-color); /* Set the fill color via CSS */
+}
+
+.starHalf:last-child {
+  direction: rtl; /* Make second half fill from right */
+}
+
+.starSvg {
+  /* Make SVG fill the half container */
+  width: var(--star-icon-size, 1.5rem);
+  height: var(--star-icon-size, 1.5rem);
+  display: block;
+}
+
+.starRatingContainer:not(.disabled) .starHalf:hover svg,
+.starRatingContainer:not(.disabled)
+  .starHalf:hover
+  ~ .starWrapper
+  .starHalf
+  svg {
+  /* Basic hover effect - needs refinement for accurate fill */
+  /* color: var(--brand-pink-dark); */ /* Example hover color */
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 0.5rem;
+  font-size: 1.5em;
+  line-height: 1;
+  margin-left: 0.5rem;
+}
+.clearButton:hover {
+  color: var(--text-error);
+}
+.starRatingContainer.disabled .clearButton {
+  display: none;
+}

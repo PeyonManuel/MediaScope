@@ -1,0 +1,350 @@
+/* src/pages/MovieDetailPage.module.css */
+.pageContainer {
+  position: relative;
+  color: var(--text-primary);
+  padding-bottom: 3rem;
+}
+
+.backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60vh; /* Example height */
+  background-size: cover;
+  background-position: center center;
+  z-index: -2;
+  opacity: 0.3; /* Adjust opacity */
+}
+/* Dark overlay for text contrast */
+.backdropOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60vh;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3) 0%,
+    var(--bg-page) 90%
+  );
+  z-index: -1;
+  /* Dark mode adjustment */
+  .dark & {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.6) 0%,
+      var(--bg-page) 90%
+    );
+  }
+}
+
+.mainContent {
+  max-width: 1100px; /* Example max width */
+  margin: 0 auto;
+  padding: var(--header-height, 4rem) 2rem 0 2rem; /* Adjust padding-top based on header height */
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative; /* Ensure content is above backdrop overlay */
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  /* md */
+  .mainContent {
+    flex-direction: row;
+    padding-top: 6rem;
+    gap: 3rem;
+  }
+}
+
+.sidebar {
+  flex: 0 0 280px; /* Fixed width for poster/actions sidebar */
+  margin-top: -4rem; /* Pull sidebar up slightly */
+}
+
+.poster {
+  width: 100%;
+  height: auto;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 3px solid var(--bg-form); /* Optional border */
+  display: block;
+}
+
+.actionsPanel {
+  background-color: rgba(
+    var(--bg-form-rgb, 255, 255, 255),
+    0.8
+  ); /* Slightly transparent bg */
+  backdrop-filter: blur(5px);
+  border-radius: var(--border-radius-md);
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: 1px solid var(--border-primary);
+  /* Dark mode */
+  .dark & {
+    background-color: rgba(var(--brand-gray-800-rgb, 31, 41, 55), 0.8);
+  }
+}
+
+.actionButton {
+  /* Reuse button styles or create new ones */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.actionButton:hover:not(:disabled) {
+  background-color: var(--bg-input-disabled);
+  color: var(--text-primary);
+}
+.actionButton.active {
+  background-color: var(--brand-pink-default);
+  color: white;
+  border-color: var(--brand-pink-default);
+}
+.actionButton.active:hover {
+  background-color: var(--brand-pink-dark);
+}
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loginPrompt {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-form);
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: var(--border-radius-md);
+  text-align: center;
+  border: 1px solid var(--border-primary);
+}
+.loginPrompt a {
+  color: var(--text-link);
+  font-weight: 500;
+}
+
+.infoSection {
+  flex: 1;
+  min-width: 0; /* Prevent overflow */
+}
+
+.title {
+  font-size: 2.25rem; /* text-4xl */
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+  line-height: 1.2;
+}
+/* Dark mode title might need lighter color */
+.dark .title {
+  color: white;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+.meta span {
+  /* Basic styling */
+}
+.year {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tagline {
+  font-style: italic;
+  color: var(--text-secondary);
+  margin: 1rem 0;
+  font-size: 1.1rem;
+}
+
+.sectionHeading {
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 600;
+  color: var(--text-heading);
+  margin: 2rem 0 0.75rem 0;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.5rem;
+}
+
+.overview {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.genreTag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--bg-input-disabled);
+  color: var(--text-secondary);
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 500;
+  border-radius: 9999px; /* rounded-full */
+  border: 1px solid var(--border-primary);
+}
+
+.loading,
+.error {
+  /* Basic styles */
+  padding: 4rem 2rem;
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.actionsPanel {
+  /* ... existing styles ... */
+  display: grid; /* Example: use grid */
+  grid-template-columns: repeat(3, 1fr); /* Example 3-col layout */
+  gap: 0.5rem; /* Adjust gap */
+}
+
+.actionButton {
+  /* ... existing base styles ... */
+  display: flex; /* Align icon and text */
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem; /* Space between icon and text */
+  font-size: 0.8rem; /* Smaller text */
+  padding: 0.4rem 0.6rem; /* Adjust padding */
+}
+.actionButton svg {
+  width: 1rem; /* Smaller icons */
+  height: 1rem;
+}
+
+/* Specific button styling if needed */
+.watchlistButton {
+  /*...*/
+}
+.likeButton {
+  /*...*/
+}
+.logButton {
+  /*...*/
+}
+.reviewButton {
+  /*...*/
+}
+.listButton {
+  grid-column: 1 / -1; /* Example: Make list button span full width */
+}
+
+.actionButton.active {
+  /* More pronounced active state */
+  background-color: var(--brand-pink-dark);
+  color: white;
+  border-color: var(--brand-pink-dark);
+}
+/* Specific active styles */
+.likeButton.active svg {
+  fill: var(--brand-pink-default); /* Fill heart when active */
+  color: var(--brand-pink-default);
+}
+
+.ratingSection {
+  grid-column: 1 / -1; /* Span full width */
+  border-top: 1px solid var(--border-primary);
+  padding-top: 0.75rem;
+  margin-top: 0.25rem; /* Adjust spacing */
+  text-align: center;
+}
+.ratingLabel {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.reviewSection {
+  grid-column: 1 / -1; /* Span full width */
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border-primary);
+  padding-top: 0.75rem;
+}
+
+.reviewTextarea {
+  width: 100%;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  color: var(--text-input);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  min-height: 60px;
+}
+.reviewTextarea:focus {
+  border-color: var(--border-focus);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--ring-focus-shadow);
+}
+
+.reviewDisplay {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  white-space: pre-wrap; /* Respect line breaks */
+  background-color: var(--bg-input-disabled); /* Subtle background */
+  padding: 0.5rem;
+  border-radius: var(--border-radius-md);
+}
+
+.reviewActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.reviewSaveButton,
+.reviewCancelButton {
+  /* Basic button styling */
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  cursor: pointer;
+}
+.reviewSaveButton {
+  background-color: var(--brand-pink-default);
+  color: white;
+  border-color: var(--brand-pink-default);
+}
+.reviewSaveButton:hover {
+  background-color: var(--brand-pink-dark);
+}
+.reviewCancelButton {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+.reviewCancelButton:hover {
+  background-color: var(--bg-input-disabled);
+}

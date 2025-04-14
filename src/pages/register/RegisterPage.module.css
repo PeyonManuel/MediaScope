@@ -1,0 +1,266 @@
+/* src/features/auth/LoginPage.module.css */
+/* ONLY includes layout, structure, and uses GLOBAL CSS Variables for theme */
+
+.container {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  /* Background comes from global :root or html.dark */
+}
+
+.formWrapper {
+  width: 100%;
+  max-width: 28rem;
+  background-color: var(--bg-form); /* Use global variable */
+  color: var(--text-primary); /* Use global variable */
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 2.5rem;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Spacing helpers */
+.formWrapper > * + * {
+  margin-top: 2rem;
+}
+.form > * + * {
+  margin-top: 1.5rem;
+}
+.inputGroup > * + * {
+  margin-top: 1rem;
+}
+
+/* --- Elements --- */
+.logoContainer {
+  display: flex;
+  justify-content: center;
+}
+.logoPlaceholder {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  color: var(--text-logo); /* Use global variable */
+}
+
+.heading {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-heading); /* Use global variable */
+}
+
+.form {
+  margin-top: 2rem;
+}
+.inputGroup {
+  border-radius: var(--border-radius-md);
+}
+
+.inputContainer {
+  position: relative; /* Needed for absolute positioning of the button */
+  margin-bottom: 1.5rem;
+}
+
+.inputField {
+  position: relative;
+  display: block;
+  width: 100%;
+  appearance: none;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  /* Add padding-right to make space for the button */
+  padding: 1rem 2.75rem 0.5rem 0.75rem; /* R(button width+gap) L T B */
+  color: var(--text-input);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.label {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.875rem;
+  font-size: 0.875rem;
+  color: var(--text-placeholder);
+  pointer-events: none;
+  transition:
+    top 0.2s ease,
+    font-size 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+  transform-origin: left center;
+  padding: 0;
+  background-color: transparent;
+}
+
+/* Float label logic remains the same */
+.inputField:focus + .label,
+.inputField:not(:placeholder-shown) + .label {
+  top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  padding: 0 0.25rem;
+}
+.inputField:focus + .label {
+  color: var(--border-focus);
+}
+
+/* --- NEW Styles for the Toggle Button --- */
+.passwordToggleBtn {
+  position: absolute;
+  top: 0;
+  bottom: 0; /* Make it fill height */
+  right: 0; /* Position on the right */
+  display: inline-flex;
+  align-items: center; /* Center icon vertically */
+  padding-right: 0.75rem; /* Match input right padding */
+  padding-left: 0.5rem; /* Space from text */
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary); /* Icon color */
+  transition: color 0.2s ease;
+}
+
+.passwordToggleBtn:hover {
+  color: var(--text-primary);
+}
+
+.passwordToggleBtn:focus {
+  outline: none; /* Remove default outline */
+}
+/* Optional: Add focus ring manually if needed */
+.passwordToggleBtn:focus-visible {
+  color: var(--border-focus);
+  /* Example focus style - could add a ring */
+  /* box-shadow: 0 0 0 2px var(--ring-focus); */
+  /* border-radius: 50%; */
+}
+
+.passwordToggleBtn svg {
+  width: 1.25rem; /* w-5 */
+  height: 1.25rem; /* h-5 */
+}
+
+.optionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.forgotPasswordLink a {
+  font-weight: 500;
+  color: var(--text-link); /* Use global variable */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.forgotPasswordLink a:hover {
+  color: var(--text-link-hover); /* Use global variable */
+}
+
+.button {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--border-radius-md);
+  border: 1px solid transparent;
+  background-color: var(--bg-button); /* Use global variable */
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--text-button); /* Use global variable */
+  cursor: pointer;
+  transition: background-color 150ms ease-in-out;
+}
+.button:hover:not(:disabled) {
+  background-color: var(--bg-button-hover); /* Use global variable */
+}
+.button:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--button-focus-shadow); /* Use global variable */
+}
+.button:disabled {
+  cursor: not-allowed;
+  background-color: var(--bg-button-disabled); /* Use global variable */
+  opacity: 0.7;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  height: 1.25rem;
+  width: 1.25rem;
+  margin-right: 0.75rem;
+  color: inherit; /* Inherit color from button */
+  border-width: 2px;
+  border-style: solid;
+  border-color: transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.createAccountLink {
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--text-secondary); /* Use global variable */
+}
+.createAccountLink a {
+  font-weight: 500;
+  color: var(--text-link);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.createAccountLink a:hover {
+  color: var(--text-link-hover);
+}
+
+.errorMessage {
+  border: 1px solid var(--border-error); /* Use global variable */
+  background-color: var(--bg-error); /* Use global variable */
+  color: var(--text-error); /* Use global variable */
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  border-radius: var(--border-radius-md);
+}
+
+/* Add to SignupPage.module.css */
+.successMessage {
+  border: 1px solid var(--brand-pink-medium); /* Example using pink */
+  background-color: var(--brand-pink-lightest);
+  color: var(--brand-pink-darkest);
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  border-radius: var(--border-radius-md);
+  margin-top: 1.5rem; /* Add some space */
+}
+
+/* Optional: Dark mode adaptation */
+.dark .successMessage {
+  border-color: var(--brand-pink-default);
+  background-color: var(--brand-gray-700); /* Example dark bg */
+  color: var(--brand-pink-light);
+}

@@ -1,0 +1,114 @@
+/* src/features/movies/components/FiltersSidebar.module.css */
+.sidebar {
+  flex: 0 0 240px; /* Fixed width for sidebar, adjust as needed */
+  padding-right: 1.5rem;
+  /* Optional border */
+  /* border-right: 1px solid var(--border-primary); */
+}
+
+.filterGroup {
+  margin-bottom: 1.5rem;
+}
+
+.filterTitle {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.5rem;
+}
+
+.selectInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  color: var(--text-input);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+.selectInput:focus {
+  border-color: var(--border-focus);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--ring-focus-shadow);
+}
+
+.genreList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto; /* Allow scrolling */
+}
+
+.genreItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.genreItem label {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  flex: 1; /* Allow label text to wrap */
+}
+
+.checkboxInput {
+  width: 1rem; /* w-4 */
+  height: 1rem; /* h-4 */
+  border-radius: 0.25rem; /* rounded */
+  border: 1px solid var(--border-primary);
+  color: var(--brand-pink-default); /* Use accent color for check */
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+.checkboxInput:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--ring-focus-shadow);
+  border-color: var(--border-focus);
+}
+
+.inputLabel {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.numberInput {
+  /* Reuse styles from selectInput or create specific ones */
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  color: var(--text-input);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+.numberInput:focus {
+  border-color: var(--border-focus);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--ring-focus-shadow);
+}
+/* Hide number input spinners (optional) */
+.numberInput::-webkit-outer-spin-button,
+.numberInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.numberInput[type='number'] {
+  -moz-appearance: textfield; /* Firefox */
+}

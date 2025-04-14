@@ -1,0 +1,30 @@
+/* src/pages/HomePage.module.css */
+.homeContainer {
+  padding: 1.5rem 2rem; /* Adjust padding */
+  max-width: 1280px; /* Optional: Max width for content */
+  margin: 0 auto; /* Center content */
+}
+
+.section {
+  margin-bottom: 3rem; /* Space between sections */
+}
+
+.sectionTitle {
+  font-size: 1.5rem; /* text-2xl */
+  line-height: 2rem;
+  font-weight: 600; /* font-semibold */
+  color: var(--text-heading);
+  margin-bottom: 1rem; /* Space below title */
+  border-bottom: 2px solid var(--border-focus); /* Accent border */
+  padding-bottom: 0.5rem;
+  display: inline-block; /* Keep border only under text */
+}
+
+.errorMessage {
+  color: var(--error-text);
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  padding: 0.75rem;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 1rem;
+}
