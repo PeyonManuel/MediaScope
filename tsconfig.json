@@ -1,19 +1,45 @@
-// tsconfig.node.json
 {
+  // --- Opciones del Compilador ---
   "compilerOptions": {
-    "jsx": "react",
-    // --- Essential Flags for Referenced Node Config ---
-    "composite": true, // Required for project references
-    // "noEmit": false,             // Explicitly allow emitting (or just remove the noEmit line) - ensure it's NOT true
-    "module": "ESNext", // Use modern modules
-    "moduleResolution": "Bundler", // Or "NodeNext" / "Bundler" - how Node finds modules
-    "allowSyntheticDefaultImports": true, // For compatibility
+    // --- Configuración Base Moderna ---
+    "target": "ESNext", // Compila a la versión más reciente de ECMAScript
+    "module": "ESNext", // Usa módulos ES modernos
+    "moduleResolution": "Bundler", // Modo de resolución moderno, ideal para Vite/bundlers
+    "lib": ["DOM", "DOM.Iterable", "ESNext"], // Bibliotecas de tipos a incluir (DOM para navegador, ESNext para JS moderno)
+    "jsx": "react-jsx", // ¡IMPORTANTE! Usa la nueva transformación JSX de React
 
-    // --- Other Recommended Options ---
-    "strict": true,
-    "skipLibCheck": true
-    // Add other necessary options...
+    // --- Interoperabilidad y Comodidad ---
+    "esModuleInterop": true, // Permite import * as React from 'react'
+    "allowSyntheticDefaultImports": true, // Permite import React from 'react'
+    "resolveJsonModule": true, // Permite importar archivos .json
+    "allowJs": true, // Permite importar archivos .js en tu proyecto TS (opcional)
+
+    // --- Chequeo Estricto (Recomendado) ---
+    "strict": true, // Habilita todas las comprobaciones estrictas de tipos
+    // "noUnusedLocals": true, // Opcional: Error si hay variables locales sin usar
+    // "noUnusedParameters": true, // Opcional: Error si hay parámetros sin usar
+    "noFallthroughCasesInSwitch": true, // Opcional: Error si un case de switch no tiene break/return
+    "types": [
+      "vite/client", // Mantenlo si usas import.meta.env
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ],
+    // --- Configuración Específica para Bundlers como Vite ---
+    "isolatedModules": true, // Requerido por Vite, asegura que cada archivo se pueda transpilar por separado
+    "noEmit": true, // ¡IMPORTANTE! TypeScript solo hará chequeo de tipos, Vite se encarga de compilar/transpilar el código final
+    "skipLibCheck": true // Evita el chequeo de tipos en archivos de declaración (.d.ts) de librerías (acelera)
+
+    // --- Opcional: Alias de Rutas (si los usas) ---
+    // "baseUrl": ".", // Necesario si usas 'paths'
+    // "paths": {
+    //   "@/*": ["./src/*"] // Ejemplo de alias para src
+    // }
   },
-  // Include the specific Node.js files this config is responsible for
-  "include": ["vite.config.ts", "src", "env.d.ts"]
+
+  // --- Archivos a Incluir en el Chequeo de Tipos ---
+  "include": ["src", "env.d.ts"], // Incluye tu código fuente y declaraciones de entorno
+
+  // --- Referencias a Otros Proyectos TypeScript ---
+  // ¡IMPORTANTE! Vincula este config con el tsconfig.node.json
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

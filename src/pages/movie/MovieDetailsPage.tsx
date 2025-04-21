@@ -1,54 +1,58 @@
-// src/pages/MovieDetailPage.tsx
 import React from 'react';
-import { useParams, Link } from 'react-router-dom'; // Or TanStack Router equivalent
+// --- TanStack Router Imports ---
+import { useParams, useLoaderData, Link } from '@tanstack/react-router';
+// --- TanStack Query Imports ---
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+// --- Redux Import ---
 import { useSelector } from 'react-redux';
 
-import { fetchMovieDetails, getImageUrl } from '../../lib/tmdb'; // Adjust path
-import { invokeEdgeFunction } from '../../lib/supabaseClient'; // Adjust path
-import type { WatchedItem } from '../../types/supabase'; // Adjust path
-import { selectCurrentUser } from '../../store/features/auth/authSlice'; // Adjust path
-
-import styles from './MovieDetailsPage.module.css'; // Create this CSS file
+// --- Your Hooks/Components/Lib Imports ---
+import { getImageUrl } from '../../lib/tmdb'; // fetchMovieDetails is now used in the loader
+import { invokeEdgeFunction } from '../../lib/supabaseClient';
+import type { WatchedItem } from '../../types/supabase';
+import { selectCurrentUser } from '../../store/features/auth/authSlice';
+import styles from './MovieDetailsPage.module.css';
 import { MovieDetails } from '../../types/tmdb';
 import StarRating from '../../components/movies/MovieStarRating';
 import { HeartIcon, HeartIconFilled } from '../../components/ui/svgs';
-// Import child components later (e.g., StarRating, ActionsPanel)
+import { movieRoute } from '../../routes/routes.ts'; // Import route definition if needed for types/hooks
 
 const MovieDetailPage = () => {
-  const { movieId } = useParams<{ movieId: string }>(); // Get ID from URL
+  // --- Get loader data and params from TanStack Router ---
+  // useLoaderData returns the data from the route's loader function
+  const movie = useLoaderData({ from: movieRoute.id }); // Type is inferred from loader return
+  // useParams gets path parameters ($movieId becomes movieId)
+  const params = useParams({ from: movieRoute.id });
+  const movieId = params.movieId; // Use the param obtained by the router
+
+  // --- Component State and Redux ---
   const currentUser = useSelector(selectCurrentUser);
-  const queryClient = useQueryClient(); // For invalidating queries after mutations
+  const queryClient = useQueryClient();
+  const [isEditingReview, setIsEditingReview] = React.useState(false);
+  const [reviewText, setReviewText] = React.useState('');
 
-  // --- Query 1: Fetch Movie Details from TMDB ---
-  const {
-    data: movie,
-    isLoading: isLoadingTmdb,
-    error: errorTmdb,
-  } = useQuery<MovieDetails, Error>({
-    queryKey: ['movie', movieId],
-    queryFn: () => fetchMovieDetails(movieId!), // Use ! because enabled depends on movieId
-    enabled: !!movieId, // Only run query if movieId exists
-    staleTime: 1000 * 60 * 60, // Cache movie details for 1 hour
-  });
+  // --- Query 1: Movie Details (REMOVED - Handled by useLoaderData) ---
+  // No longer needed here, data comes from useLoaderData()
 
-  // --- Query 2: Fetch Watchlist Status from Supabase ---
+  // --- Query 2: Fetch Watchlist Status from Supabase (Stays in component) ---
   const watchlistQueryKey = ['watchlist', 'status', movieId];
   const {
-    data: watchlistStatus, // Expected: { isOnWatchlist: boolean }
-    isLoading: isLoadingWatchlist,
+    data: watchlistStatus,
+    // isLoading: isLoadingWatchlist, // Can use this for finer-grained loading indicators
   } = useQuery<{ isOnWatchlist: boolean }, Error>({
     queryKey: watchlistQueryKey,
     queryFn: () =>
+      // Ensure movieId is passed as number if required by edge function
       invokeEdgeFunction('get-watchlist-status', { movieId: Number(movieId) }),
-    enabled: !!currentUser && !!movieId, // Only run if user logged in and movieId exists
+    // Use movieId from useParams. Query runs only if user logged in and movieId is valid.
+    enabled: !!currentUser && !!movieId,
   });
 
-  // --- Query 3: Fetch Watched Item details from Supabase ---
+  // --- Query 3: Fetch Watched Item details from Supabase (Stays in component) ---
   const watchedQueryKey = ['watched', 'item', movieId];
   const {
-    data: watchedItem, // Expected: WatchedItem | null
-    isLoading: isLoadingWatched,
+    data: watchedItem,
+    // isLoading: isLoadingWatched, // Can use this for finer-grained loading indicators
   } = useQuery<WatchedItem | null, Error>({
     queryKey: watchedQueryKey,
     queryFn: () =>
@@ -57,30 +61,42 @@ const MovieDetailPage = () => {
   });
 
   // --- Mutations ---
-  // Watchlist Add/Remove
-  const toggleWatchlistMutation = useMutation<any, Error, boolean>({
-    // Takes boolean: true to add, false to remove
+  const toggleWatchlistMutation = useMutation<
+    any, // Type of data returned by the edge function (can be more specific)
+    Error, // Type of error
+    boolean // Type of variable passed to mutationFn (true to add, false to remove)
+  >({
     mutationFn: async (shouldAdd) => {
+      // Determine which edge function to call
       const functionName =
         shouldAdd ? 'add-to-watchlist' : 'remove-from-watchlist';
+      console.log(`Calling ${functionName} for movieId: ${movieId}`);
+      // Call the edge function, ensuring movieId is passed correctly (e.g., as number)
       return invokeEdgeFunction(functionName, { movieId: Number(movieId) });
     },
-    onSuccess: () => {
-      // Refetch the status after mutation succeeds
+    onSuccess: (data, variables) => {
+      // Variables holds the boolean passed to mutate (shouldAdd)
+      console.log(
+        `Watchlist successfully ${variables ? 'added to' : 'removed from'}!`,
+        data
+      );
+      // Refetch the watchlist status query to update the UI
       queryClient.invalidateQueries({ queryKey: watchlistQueryKey });
-      console.log('Watchlist updated!');
-      // Can add optimistic updates here for faster UI feedback
+      // Optionally show a success toast/message
     },
-    onError: (error) => {
-      console.error('Error updating watchlist:', error);
-      // Show error toast to user
+    onError: (error, variables) => {
+      console.error(
+        `Error ${variables ? 'adding to' : 'removing from'} watchlist:`,
+        error
+      );
+      // Optionally show an error toast/message to the user
     },
   });
 
-  // Log/Update Watched Item
   const logWatchedMutation = useMutation<
-    any,
-    Error,
+    any, // Type of data returned by the edge function
+    Error, // Type of error
+    // Type for variables passed to mutationFn: Partial object of WatchedItem fields
     Partial<
       Omit<
         WatchedItem,
@@ -89,95 +105,135 @@ const MovieDetailPage = () => {
     >
   >({
     mutationFn: async (watchedData) => {
+      console.log(
+        `Calling log-watched-movie for movieId: ${movieId} with data:`,
+        watchedData
+      );
+      // Call the edge function to log/update watched data
       return invokeEdgeFunction('log-watched-movie', {
-        movieId: Number(movieId),
-        ...watchedData, // Pass rating, liked, review etc.
+        movieId: Number(movieId), // Pass movieId
+        ...watchedData, // Pass other fields like rating, liked, review, watched_date
       });
     },
-    onSuccess: () => {
-      // Refetch watched item details AND potentially watchlist status (if adding to watched removes from watchlist)
+    onSuccess: (data, variables) => {
+      console.log('Watched item successfully updated/logged!', variables, data);
+      // Refetch both the watched item details and watchlist status
+      // (logging might implicitly remove from watchlist in some setups)
       queryClient.invalidateQueries({ queryKey: watchedQueryKey });
-      queryClient.invalidateQueries({ queryKey: watchlistQueryKey }); // Optional: if logging removes from watchlist
-      console.log('Watched item updated!');
+      queryClient.invalidateQueries({ queryKey: watchlistQueryKey });
+      // Optionally show a success toast/message
     },
-    onError: (error) => {
-      console.error('Error logging watched movie:', error);
+    onError: (error, variables) => {
+      console.error('Error logging watched movie:', variables, error);
+      // Optionally show an error toast/message to the user
     },
   });
 
   // --- Event Handlers ---
   const handleWatchlistToggle = () => {
-    if (!currentUser || !movie) return;
+    // Ensure user is logged in and movieId is available
+    if (!currentUser || !movieId) {
+      console.warn(
+        'User not logged in or movieId missing for watchlist toggle.'
+      );
+      // Optionally prompt login
+      return;
+    }
+    // Determine if the item is currently on the list (use nullish coalescing for safety)
     const currentlyOnList = watchlistStatus?.isOnWatchlist ?? false;
-    toggleWatchlistMutation.mutate(!currentlyOnList); // Pass 'true' to add, 'false' to remove
+    // Call the mutation with the opposite action (true to add, false to remove)
+    toggleWatchlistMutation.mutate(!currentlyOnList);
   };
 
   const handleLikeToggle = () => {
-    if (!currentUser || !movie) return;
+    // Ensure user is logged in and movieId is available
+    if (!currentUser || !movieId) {
+      console.warn('User not logged in or movieId missing for like toggle.');
+      return;
+    }
+    // Determine the current liked status (default to false if no watchedItem exists)
     const currentLiked = watchedItem?.liked ?? false;
+    // Call the mutation to update the 'liked' status
     logWatchedMutation.mutate({ liked: !currentLiked });
   };
 
   const handleRatingSet = (newRating: number | null) => {
-    // rating is 1-10 (0.5 stars) or null to remove
-    if (!currentUser || !movie) return;
+    // newRating is expected to be 1-10 (or null to remove rating)
+    if (!currentUser || !movieId) {
+      console.warn('User not logged in or movieId missing for rating set.');
+      return;
+    }
+    console.log('Setting rating to:', newRating);
+    // Call the mutation to update the 'rating'
     logWatchedMutation.mutate({ rating: newRating });
   };
 
-  // New handler for the "Log/Watched" button
   const handleLogWatched = () => {
-    if (!currentUser || !movie) return;
-    // Create/update entry, maybe set watched_date to today if not already set
+    // "Log" button clicked - ensures an entry exists, sets watched_date if needed
+    if (!currentUser || !movieId) {
+      console.warn('User not logged in or movieId missing for log watched.');
+      return;
+    }
+
+    // Prepare the data payload for the mutation
     const updates: Partial<
       Omit<
         WatchedItem,
         'id' | 'user_id' | 'created_at' | 'updated_at' | 'movie_id'
       >
     > = {};
+
+    // Set watched_date to today if it doesn't exist on the current item
     if (!watchedItem?.watched_date) {
-      updates.watched_date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    }
-    // Ensure liked/rating aren't accidentally reset if just logging
-    if (watchedItem?.liked !== undefined) updates.liked = watchedItem.liked;
-    else updates.liked = null; // Preserve or set null
-    if (watchedItem?.rating !== undefined) updates.rating = watchedItem.rating;
-    else updates.rating = null; // Preserve or set null
-
-    // If no interaction exists yet, ensure `liked` is not set unless explicitly liked
-    if (!watchedItem) {
-      updates.liked = false; // Default to not liked if just logging
+      updates.watched_date = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
     }
 
+    // Preserve existing like/rating status unless explicitly changed elsewhere
+    // If creating a new entry, default liked to false, rating to null
+    updates.liked = watchedItem?.liked ?? false;
+    updates.rating = watchedItem?.rating ?? null;
+    // Preserve review if it exists
+    if (watchedItem?.review !== undefined) updates.review = watchedItem.review;
+
+    console.log('Logging watched movie with updates:', updates);
+    // Call the mutation to create/update the watched entry
     logWatchedMutation.mutate(updates);
   };
 
-  // Placeholder for review logic state/handler
-  const [isEditingReview, setIsEditingReview] = React.useState(false);
-  const [reviewText, setReviewText] = React.useState(''); // Use this for textarea later
-
   const handleToggleReview = () => {
-    if (!currentUser) return;
-    if (isEditingReview) {
-      // Logic to save review would go here using logWatchedMutation
-      console.log('Save review:', reviewText);
-      logWatchedMutation.mutate({ review: reviewText || null }); // Save or clear review
-    } else {
-      // Set initial text if editing existing review
-      setReviewText(watchedItem?.review || '');
+    if (!currentUser || !movieId) {
+      console.warn('User not logged in or movieId missing for review toggle.');
+      return;
     }
-    setIsEditingReview(!isEditingReview);
+
+    if (isEditingReview) {
+      // Currently editing, so "Save" was clicked
+      console.log('Saving review:', reviewText);
+      // Call mutation to save the review text (or null if empty to clear it)
+      logWatchedMutation.mutate({ review: reviewText.trim() || null });
+      // Exit editing mode after attempting save
+      setIsEditingReview(false);
+    } else {
+      // Not editing, so "Edit" or "Add Review" was clicked
+      // Populate the textarea with the current review text (or empty string)
+      setReviewText(watchedItem?.review || '');
+      // Enter editing mode
+      setIsEditingReview(true);
+    }
   };
 
   // --- Render Logic ---
-  if (isLoadingTmdb) {
-    return <div className={styles.loading}>Loading movie details...</div>; // Add better loading state
+  // NOTE: Loading/Error for the main movie data is now best handled by
+  // TanStack Router's `pendingComponent` and `errorComponent` options on the route definition.
+  // If not using those, `movie` from useLoaderData will be undefined until loaded.
+  // We'll keep a basic check here for simplicity, but recommend using the route options.
+  if (!movie) {
+    // This state might not be reached if using pendingComponent
+    return <div className={styles.loading}>Loading movie details...</div>;
   }
+  // Error handling should ideally use errorComponent in the route definition
 
-  if (errorTmdb || !movie) {
-    return <div className={styles.error}>Error loading movie details.</div>; // Add better error state
-  }
-
-  // --- Extracted Data for Rendering ---
+  // --- Extracted Data for Rendering (movie comes from useLoaderData) ---
   const {
     title,
     backdrop_path,
@@ -190,45 +246,47 @@ const MovieDetailPage = () => {
     genres = [],
     credits,
     videos,
-  } = movie; // Destructure movie details
+  } = movie; // Destructure movie details from loader data
 
   const releaseYear =
     release_date ? new Date(release_date).getFullYear() : 'N/A';
   const backdropUrl = getImageUrl(backdrop_path, 'w1280');
   const posterUrl = getImageUrl(poster_path, 'w500');
 
-  // Determine current interaction states
+  // Determine current interaction states (remains the same logic)
   const isOnWatchlist = watchlistStatus?.isOnWatchlist ?? false;
   const isLiked = watchedItem?.liked ?? false;
-  const currentRating = watchedItem?.rating ?? null; // Assuming rating is 1-10 or null
-  // Determine if movie is considered 'watched' (i.e., has an entry)
+  const currentRating = watchedItem?.rating ?? null;
   const isWatched = !!watchedItem;
-  const LikeIcon = isLiked ? HeartIconFilled : HeartIcon; // Choose filled/empty heart
+  const LikeIcon = isLiked ? HeartIconFilled : HeartIcon;
 
-  // Combine loading/pending states for disabling buttons
+  // Combine loading/pending states for disabling buttons (remains the same)
   const isActionPending =
     toggleWatchlistMutation.isPending || logWatchedMutation.isPending;
 
+  // --- JSX (Remains largely the same, just uses 'movie' from useLoaderData) ---
   return (
     <div className={styles.pageContainer}>
-      {/* Optional Backdrop */}
+      {/* Backdrop */}
       {backdropUrl && (
         <div
           className={styles.backdrop}
           style={{ backgroundImage: `url(${backdropUrl})` }}></div>
       )}
-      <div className={styles.backdropOverlay}></div>{' '}
-      {/* Gradient/dark overlay */}
+      <div className={styles.backdropOverlay}></div>
       <div className={styles.mainContent}>
-        {/* Left Side: Poster & Actions */}
+        {/* Sidebar */}
         <aside className={styles.sidebar}>
+          {/* ... poster ... */}
           <img
             src={posterUrl || '/placeholder-poster.png'}
             alt={`${title} Poster`}
             className={styles.poster}
           />
+          {/* Actions Panel - Conditionally render based on currentUser */}
           {currentUser && (
             <div className={styles.actionsPanel}>
+              {/* ... watchlist button ... */}
               <button
                 onClick={handleWatchlistToggle}
                 disabled={toggleWatchlistMutation.isPending}
@@ -236,31 +294,28 @@ const MovieDetailPage = () => {
                 title={
                   isOnWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'
                 }>
-                {/* Eye Icon or similar */}
                 {toggleWatchlistMutation.isPending ?
                   '...'
                 : isOnWatchlist ?
                   'On Watchlist'
                 : 'Watchlist'}
               </button>
+              {/* ... like button ... */}
               <button
                 onClick={handleLikeToggle}
                 disabled={logWatchedMutation.isPending}
                 className={`${styles.actionButton} ${isLiked ? styles.active : ''}`}
                 title={isLiked ? 'Unlike' : 'Like'}>
-                {/* Heart Icon */}
                 {LikeIcon()}
               </button>
+              {/* ... star rating ... */}
               <StarRating
                 currentRating={currentRating}
                 onRate={handleRatingSet}
                 disabled={logWatchedMutation.isPending}
               />
-              <p>
-                Rating:{' '}
-                {currentRating ? (currentRating / 2).toFixed(1) : 'Not Rated'}
-              </p>
-              {/* Add "Mark Watched" / "Log" / Review Button */}
+              <p>Rating: {vote_average ? vote_average.toFixed(2) : 'N/A'}</p>
+              {/* ... other actions ... */}
             </div>
           )}
           {!currentUser && (
@@ -270,22 +325,19 @@ const MovieDetailPage = () => {
           )}
         </aside>
 
-        {/* Right Side: Movie Info */}
+        {/* Info Section */}
         <section className={styles.infoSection}>
+          {/* ... title, meta, tagline, overview, genres ... */}
           <h1 className={styles.title}>{title}</h1>
           <div className={styles.meta}>
             <span className={styles.year}>{releaseYear}</span>
-            {/* Add Director Here */}
-            {/* <span>Directed by <Link to={`/director/${directorId}`}>{directorName}</Link></span> */}
             {runtime && <span className={styles.runtime}>{runtime} mins</span>}
           </div>
-
           {tagline && <p className={styles.tagline}>"{tagline}"</p>}
           <h2 className={styles.sectionHeading}>Overview</h2>
           <p className={styles.overview}>
             {overview || 'No overview available.'}
           </p>
-
           <h2 className={styles.sectionHeading}>Genres</h2>
           <div className={styles.genres}>
             {genres.map((g) => (
@@ -294,6 +346,7 @@ const MovieDetailPage = () => {
               </span>
             ))}
           </div>
+          {/* ... Cast, Crew, Videos sections ... */}
         </section>
       </div>
     </div>

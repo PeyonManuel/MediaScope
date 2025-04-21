@@ -1,25 +1,19 @@
+// tsconfig.node.json
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "target": "ES2022",
-    "lib": ["ES2023"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "composite": true,
+    "jsx": "react-jsx",
+    // --- Essential Flags for Referenced Node Config ---
+    "composite": true, // Required for project references
+    // "noEmit": false,             // Explicitly allow emitting (or just remove the noEmit line) - ensure it's NOT true
+    "module": "ESNext", // Use modern modules
+    "moduleResolution": "Bundler", // Or "NodeNext" / "Bundler" - how Node finds modules
+    "allowSyntheticDefaultImports": true, // For compatibility
 
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-
-    /* Linting */
+    // --- Other Recommended Options ---
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "skipLibCheck": true
+    // Add other necessary options...
   },
-  "include": ["vite.config.ts"]
+  // Include the specific Node.js files this config is responsible for
+  "include": ["vite.config.ts", "src", "env.d.ts"]
 }

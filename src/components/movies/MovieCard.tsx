@@ -1,6 +1,6 @@
 // src/features/movies/components/MovieCard.tsx
 import React from 'react';
-import { Link } from 'react-router-dom'; // Assuming React Router DOM
+import { Link } from '@tanstack/react-router'; // Assuming React Router DOM
 import type { Movie } from '../../types/tmdb'; // Adjust path
 import { getImageUrl } from '../../lib/tmdb'; // Adjust path
 import styles from './MovieCard.module.css'; // We'll create this CSS module next

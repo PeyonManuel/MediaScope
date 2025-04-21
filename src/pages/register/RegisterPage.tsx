@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '@tanstack/react-router';
 import styles from './RegisterPage.module.css'; // Use the renamed CSS module import
 import { eyeClosedIcon, eyeOpenIcon } from '../../components/ui/svgs';
 import {

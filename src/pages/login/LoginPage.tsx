@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '@tanstack/react-router';
 import styles from './LoginPage.module.css'; // Import CSS Module
 import {
   selectAuthError,
