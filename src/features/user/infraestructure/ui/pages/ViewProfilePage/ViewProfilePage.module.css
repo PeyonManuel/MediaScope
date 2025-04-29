@@ -1,0 +1,269 @@
+/* src/pages/ViewProfilePage/ViewProfilePage.module.css */
+/* Consolidated styles using global variables from index.css */
+
+.profilePageContainer {
+  padding: var(--header-height, 4rem) 5% 4rem 5%;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: var(--text-primary);
+}
+
+/* --- Profile Header --- */
+.profileHeader {
+  display: flex;
+  flex-direction: column; /* Stack avatar/info on small screens */
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-primary);
+
+  @media (min-width: 768px) {
+    /* Row layout on larger screens */
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+}
+
+.profileAvatarContainer {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--border-primary);
+  background-color: var(--bg-input-disabled);
+  box-shadow: var(--shadow-lg);
+  margin: 0 auto; /* Center on small screens */
+
+  @media (min-width: 768px) {
+    width: 120px;
+    height: 120px;
+    margin: 0; /* Reset margin */
+  }
+}
+
+.profileAvatar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profileAvatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+.profileAvatarPlaceholder svg {
+  width: 60%;
+  height: 60%;
+}
+
+.profileInfo {
+  flex-grow: 1;
+  text-align: center; /* Center text on small screens */
+  @media (min-width: 768px) {
+    text-align: left; /* Align left on larger screens */
+    padding-top: 0.5rem;
+  }
+}
+
+.profileUsername {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+}
+
+.profileBio {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  white-space: pre-wrap;
+  max-width: 65ch;
+  margin-left: auto;
+  margin-right: auto;
+  @media (min-width: 768px) {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* Stats Container Styles */
+.statsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem 2rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-primary);
+
+  @media (min-width: 768px) {
+    justify-content: flex-start;
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0.5rem;
+  }
+}
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  @media (min-width: 768px) {
+    align-items: flex-start;
+  }
+}
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Edit Profile Button Styles */
+.editProfileButton {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: transparent;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+}
+.editProfileButton:hover {
+  background-color: var(--bg-input-disabled);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+.editProfileButton:focus-visible {
+  outline: none;
+  box-shadow: var(--button-focus-shadow);
+}
+
+/* --- Watched Section --- */
+.watchedSection {
+  margin-top: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+/* --- Filter Controls Styles --- */
+.controlsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--bg-form);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+}
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.checkboxGroup {
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+.filterGroup label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.checkboxGroup label {
+  font-weight: normal;
+  color: var(--text-primary);
+}
+.searchInput,
+.selectInput {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  color: var(--text-input);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  min-width: 150px;
+  cursor: pointer;
+}
+.searchInput::placeholder,
+.selectInput::placeholder {
+  color: var(--text-placeholder);
+}
+.searchInput:focus,
+.selectInput:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: var(--ring-focus-shadow);
+}
+.checkboxInput {
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  cursor: pointer;
+  accent-color: var(--brand-pink-default);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  margin-right: 0.25rem;
+}
+.checkboxInput:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: var(--ring-focus-shadow);
+}
+/* --- End Filter Controls --- */
+
+.listContainer {
+  margin-top: 1rem;
+}
+
+.loadingMessage,
+.errorMessage,
+.infoMessage {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.errorMessage {
+  color: var(--text-error);
+  font-weight: 500;
+}

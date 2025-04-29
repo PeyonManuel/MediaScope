@@ -37,7 +37,7 @@
   },
 
   // --- Archivos a Incluir en el Chequeo de Tipos ---
-  "include": ["src", "env.d.ts"], // Incluye tu código fuente y declaraciones de entorno
+  "include": ["src", "env.d.ts", "supabase"], // Incluye tu código fuente y declaraciones de entorno
 
   // --- Referencias a Otros Proyectos TypeScript ---
   // ¡IMPORTANTE! Vincula este config con el tsconfig.node.json

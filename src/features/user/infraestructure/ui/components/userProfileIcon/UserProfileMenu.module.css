@@ -1,0 +1,193 @@
+/* src/components/layout/UserProfileMenu/UserProfileMenu.module.css */
+/* Styles using global variables from index.css - Refined */
+
+.profileMenuContainer {
+  position: relative; /* Needed for dropdown positioning */
+  display: flex; /* Use flex to align button */
+  align-items: center;
+}
+
+.avatarButton {
+  background-color: transparent;
+  border: 2px solid transparent; /* Border for focus state and hover */
+  padding: 2px; /* Add slight padding so border doesn't overlap image directly */
+  border-radius: 50%;
+  width: 38px; /* Slightly larger */
+  height: 38px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease; /* Add box-shadow transition */
+}
+/* Add a subtle hover effect */
+.avatarButton:hover {
+  border-color: var(--border-primary, #d1d5db);
+}
+
+.avatarButton:focus-visible {
+  outline: none;
+  border-color: var(--border-focus, #ec4899); /* Use focus color */
+  box-shadow: var(--button-focus-shadow); /* Use global focus shadow */
+}
+
+.avatarImage,
+.avatarImageSmall {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%; /* Ensure image inside is also rounded */
+}
+
+.avatarImageSmall {
+  width: 25%;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-input-disabled, #f3f4f6);
+  color: var(--text-secondary, #6b7280);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.avatarPlaceholder svg {
+  width: 60%;
+  height: 60%;
+}
+
+/* Dropdown Menu Styles */
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem); /* Slightly less gap */
+  right: 0;
+  background-color: var(--bg-form, white);
+  border-radius: var(
+    --border-radius-lg,
+    8px
+  ); /* Use larger radius consistently */
+  border: 1px solid var(--border-primary, #d1d5db);
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
+  min-width: 200px; /* Slightly wider */
+  z-index: 100;
+  padding: 0.5rem 0; /* Keep vertical padding on the container */
+  opacity: 0;
+  transform: translateY(-5px) scale(0.98); /* Adjust starting transform */
+  transform-origin: top right; /* Animate from top right */
+  animation: fadeInScaleUp 0.18s ease-out forwards; /* Adjusted animation */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Refined animation */
+@keyframes fadeInScaleUp {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menuHeader {
+  padding: 0.6rem 1rem; /* Adjust padding */
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 0.5rem;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ellipsis if text too long */
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  gap: 0.5rem;
+  align-items: center;
+}
+.menuHeader strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  display: block; /* Make username wrap if needed */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.menuItem,
+.menuItemButton {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  /* --- FIX: Explicitly set padding and override margin --- */
+  padding: 0.5rem 1rem !important; /* Use !important if absolutely necessary to override global 'a' style, or increase specificity */
+  margin: 0 !important; /* Reset any potential global margin on 'a' tags */
+  /* --- End Fix --- */
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease-out,
+    color 0.15s ease-out;
+  white-space: nowrap;
+}
+
+.menuItem:hover,
+.menuItemButton:hover {
+  background-color: var(--bg-input-disabled, #f3f4f6);
+  color: var(--text-primary);
+}
+
+/* Clearer focus state */
+.menuItem:focus,
+.menuItemButton:focus {
+  outline: none; /* Remove default */
+}
+.menuItem:focus-visible,
+.menuItemButton:focus-visible {
+  outline: none;
+  background-color: var(--bg-input-disabled, #f3f4f6); /* Match hover */
+  box-shadow: inset 0 0 0 2px var(--border-focus, #ec4899);
+}
+
+.menuDivider {
+  border: none;
+  border-top: 1px solid var(--border-primary);
+  margin: 0.5rem 0;
+}
+
+.menuItemButton {
+  /* Padding is inherited from .menuItem */
+  color: var(--text-error, #b91c1c);
+  font-weight: 500;
+}
+
+html.dark .menuItemButton {
+  color: var(--text-error, #fca5a5);
+}
+
+.menuItemButton:hover {
+  background-color: var(--bg-error, #fef2f2);
+  color: var(--text-error); /* Keep error color on hover */
+}
+html.dark .menuItemButton:hover {
+  background-color: var(--bg-error, #450a0a);
+  color: var(--text-error);
+}
+.menuItemButton:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--text-error); /* Use error color for ring */
+  background-color: var(--bg-error, #fef2f2);
+  color: var(--text-error);
+}
+html.dark .menuItemButton:focus-visible {
+  background-color: var(--bg-error, #450a0a);
+}

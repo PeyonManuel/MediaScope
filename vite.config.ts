@@ -9,9 +9,9 @@ export default defineConfig({
     react(),
   ],
   test: {
-    // Configuración de Vitest
-    globals: true, // Para no tener que importar describe, it, expect, etc.
-    environment: 'jsdom', // Simula el DOM
-    css: true, // Habilita procesamiento de CSS si es necesario (ej. CSS Modules)
+    globals: true,
+    environment: 'jsdom', // <-- MAKE SURE THIS LINE EXISTS AND IS SPELLED CORRECTLY
+    setupFiles: './src/setupTests.ts', // Ensure this path is correct too
+    css: true,
   },
 });

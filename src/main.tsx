@@ -1,5 +1,4 @@
 import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import {
@@ -8,26 +7,24 @@ import {
   indexRoute,
   registerRoute,
   movieRoute,
-} from './routes/routes.ts';
-import MovieDetailsPage from './pages/movie/MovieDetailsPage';
-import React from 'react';
+  forgotPasswordRoute,
+  searchRoute,
+  editProfileRoute,
+  viewProfileRoute,
+} from './routes/routes';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import {
-  Outlet,
   RouterProvider,
-  Link,
   createRouter,
-  createRoute,
   createRootRoute,
 } from '@tanstack/react-router';
 import ReactDOM from 'react-dom/client';
+import NotFoundPage from './shared/infraestructure/pages/NotFoundPage';
 
 const queryClient = new QueryClient();
-
-// <Route path="/movie/:movieId" element={<MovieDetailPage />}></Route>
 
 export const rootRoute = createRootRoute({
   component: () => (
@@ -44,9 +41,17 @@ const routeTree = rootRoute.addChildren([
   registerRoute,
   browseRoute,
   movieRoute,
+  forgotPasswordRoute,
+  searchRoute,
+  editProfileRoute,
+  viewProfileRoute,
 ]);
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  defaultNotFoundComponent: NotFoundPage,
+  scrollRestoration: true,
+});
 
 declare module '@tanstack/react-router' {
   interface Register {

@@ -15,5 +15,5 @@
     // Add other necessary options...
   },
   // Include the specific Node.js files this config is responsible for
-  "include": ["vite.config.ts", "src", "env.d.ts"]
+  "include": ["vite.config.ts", "src", "env.d.ts", "supabase"]
 }

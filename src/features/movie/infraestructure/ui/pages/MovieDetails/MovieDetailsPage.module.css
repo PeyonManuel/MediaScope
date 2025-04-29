@@ -1,0 +1,593 @@
+/* src/pages/movie/MovieDetailsPage.module.css */
+/* Complete styles adapted to use global variables from index.css */
+/* Incorporates styles for all data elements */
+
+/*
+  NOTE: This file relies entirely on the variables defined
+  globally (e.g., in index.css) for theming and base values
+  (like --text-primary, --bg-page, --brand-pink-default, etc.).
+*/
+
+/* Base styles with transitions */
+.pageContainer {
+  position: relative;
+  color: var(--text-primary);
+  background: var(--bg-page); /* Use global variable (could be gradient) */
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+  min-height: 100vh;
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-x: hidden;
+  padding-bottom: 4rem; /* Ensure space at the bottom */
+}
+
+/* Backdrop styles */
+.backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 65vh; /* Adjusted height */
+  background-size: cover;
+  background-position: center 20%; /* Focus slightly higher */
+  z-index: 1;
+  opacity: 0.25; /* Subtle */
+  filter: saturate(100%) contrast(100%); /* Less aggressive filter */
+  pointer-events: none; /* Prevent interaction */
+}
+
+.backdropOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 65vh; /* Match backdrop */
+  /* Use global --bg-page which might be a gradient or color */
+  background: linear-gradient(
+    to bottom,
+    rgba(from var(--bg-page) r g b / 0) 0%,
+    /* Start transparent */ rgba(from var(--bg-page) r g b / 0.7) 60%,
+    /* Fade stronger */ var(--bg-page) 95%
+      /* Blend smoothly into page background */
+  );
+  z-index: 2;
+  transition: background 0.3s ease;
+  pointer-events: none;
+}
+
+/* Entrance animation */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mainContent {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  /* Use header height variable if defined globally, fallback */
+  padding: var(--header-height, 6rem) 5% 0 5%; /* Remove bottom padding here */
+  max-width: 1200px; /* Adjusted max width */
+  margin: 0 auto;
+  animation: fadeInSlideUp 0.5s ease-out 0.1s both;
+}
+
+@media (min-width: 992px) {
+  .mainContent {
+    flex-direction: row;
+    padding-top: 12vh; /* Adjust relative to backdrop */
+    gap: 3rem;
+  }
+}
+
+/* Sidebar (Poster & Actions) */
+.sidebar {
+  flex: 0 0 280px;
+  margin-top: -5rem; /* Adjust overlap */
+  position: relative;
+  transition: transform 0.2s ease-out;
+}
+
+.poster {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3; /* Enforce poster aspect ratio */
+  object-fit: cover;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  display: block;
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out;
+  border: 3px solid var(--bg-form);
+  background-color: var(--bg-input-disabled); /* Placeholder color */
+}
+.poster:hover {
+  transform: scale(1.02) rotate(-0.5deg);
+  box-shadow: var(--shadow-lg); /* Keep consistent or slightly enhance */
+}
+
+.actionsPanel {
+  background-color: var(--bg-form);
+  border-radius: var(--border-radius-md);
+  padding: 1rem; /* Adjusted padding */
+  margin-top: 1.5rem;
+  border: 1px solid var(--border-primary);
+  transition: all 0.2s ease-out;
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+  gap: 0.6rem;
+}
+.actionsPanel:hover {
+  border-color: var(--border-focus);
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.8rem;
+  transition: all 0.2s ease-out;
+  white-space: nowrap;
+  text-align: center;
+}
+.actionButton:hover:not(:disabled) {
+  background-color: var(--bg-input-disabled);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+.actionButton.active {
+  background-color: var(--brand-pink-default);
+  color: var(--text-button);
+  border-color: var(--brand-pink-default);
+}
+.actionButton.active:hover {
+  background-color: var(--brand-pink-dark);
+  border-color: var(--brand-pink-dark);
+}
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--bg-input-disabled);
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
+}
+.actionButton:focus-visible {
+  outline: none;
+  box-shadow: var(--button-focus-shadow);
+}
+.actionButton svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+.likeButton.active svg {
+  fill: var(--text-button); /* Use text color for active like */
+  color: var(--text-button); /* Ensure consistency */
+}
+
+.loginPrompt {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-form);
+  padding: 1rem;
+  margin-top: 1.5rem;
+  border-radius: var(--border-radius-md);
+  text-align: center;
+  border: 1px solid var(--border-primary);
+}
+.loginPrompt a {
+  color: var(--text-link);
+  font-weight: 500;
+  text-decoration: none;
+}
+.loginPrompt a:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
+
+/* Info Section */
+.infoSection {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 2rem; /* Add padding here instead of mainContent */
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0 0 0.1rem 0; /* Tight bottom margin */
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.originalTitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-top: 0.1rem;
+  margin-bottom: 0.75rem;
+  font-style: italic;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.year {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-right: 0.5rem;
+}
+.director {
+  white-space: nowrap;
+}
+.director strong {
+  color: var(--text-primary);
+  font-weight: 500; /* Normal weight for name */
+}
+.director::before,
+.runtime::before,
+.status::before,
+.rating::before {
+  /* Add separator consistently */
+  content: '•';
+  margin-left: 0.5rem; /* Space before separator */
+  margin-right: 0.5rem;
+  color: var(--text-secondary);
+  display: inline-block; /* Ensure spacing */
+}
+.rating {
+  white-space: nowrap;
+}
+.rating strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.status {
+  background-color: var(--bg-input-disabled); /* Use subtle background */
+  color: var(--text-secondary);
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--border-radius-md);
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tagline {
+  font-style: italic;
+  color: var(--text-secondary);
+  margin: 1.5rem 0;
+  font-size: 1.15rem;
+  border-left: 3px solid var(--brand-pink-default);
+  padding-left: 1rem;
+  opacity: 0.9;
+}
+
+.sectionHeading {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin: 2.5rem 0 1rem 0;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.overview {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.genreTag {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  background-color: var(--bg-input-disabled);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px; /* rounded-full */
+  border: none;
+  transition:
+    background-color 0.2s ease-out,
+    color 0.2s ease-out;
+}
+.genreTag:hover {
+  background-color: var(--border-primary);
+  color: var(--text-primary);
+}
+
+/* Cast List Styles */
+.castList {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(110px, 1fr)
+  ); /* Adjust size */
+  gap: 1rem 1.25rem; /* Row and column gap */
+  margin-top: 1rem;
+}
+.castMember {
+  text-align: center;
+  transition: transform 0.2s ease-out;
+}
+.castMember:hover {
+  transform: translateY(-2px);
+}
+.castImage {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 0.5rem;
+  box-shadow: var(--shadow-md);
+  background-color: var(--bg-input-disabled); /* Placeholder bg */
+}
+.castName {
+  display: block;
+  font-weight: 500; /* Adjusted weight */
+  font-size: 0.85rem; /* Adjusted size */
+  color: var(--text-primary);
+  line-height: 1.3; /* Tighter line height */
+}
+.castCharacter {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+/* Details Grid Styles */
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Adjust size */
+  gap: 0.6rem 1.5rem;
+  margin-top: 1rem;
+  padding: 1rem; /* Add padding */
+  background-color: var(--bg-form); /* Use form background */
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  font-size: 0.875rem; /* Adjusted size */
+  color: var(--text-secondary);
+}
+.detailsGrid div {
+  line-height: 1.4; /* Adjust line height */
+}
+.detailsGrid strong {
+  color: var(--text-primary);
+  margin-right: 0.4rem;
+  font-weight: 500;
+}
+.detailsGrid a {
+  color: var(--text-link);
+  text-decoration: none;
+  word-break: break-all; /* Break long URLs */
+}
+.detailsGrid a:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
+
+/* Production List Styles */
+.productionList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem; /* Row and column gap */
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--bg-form);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  filter: grayscale(30%); /* Less grayscale */
+  opacity: 0.9;
+}
+html.dark .productionList {
+  filter: grayscale(30%) invert(95%) contrast(150%); /* Adjust dark mode filter */
+}
+.productionCompany {
+  display: inline-flex; /* Align items if name is shown */
+  align-items: center;
+  gap: 0.5rem;
+}
+.productionCompany img {
+  max-height: 25px; /* Adjusted height */
+  max-width: 80px;
+  width: auto;
+  height: auto;
+  vertical-align: middle;
+}
+.productionCompany span {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Video Gallery Styles */
+.videoGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Adjust size */
+  gap: 1rem; /* Adjust gap */
+  margin-top: 1rem;
+}
+.videoThumbnail {
+  display: block;
+  position: relative;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out;
+  background-color: var(--bg-input-disabled); /* Placeholder bg */
+}
+.videoThumbnail:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+.videoThumbnail img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border-primary); /* Subtle border below image */
+}
+.videoThumbnail span {
+  display: block; /* Use block for better padding */
+  position: relative; /* Change from absolute */
+  background: var(--bg-form); /* Use form background */
+  color: var(--text-secondary);
+  padding: 0.5rem 0.75rem; /* Adjust padding */
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* Rating and Review sections */
+.ratingSection {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border-primary);
+  padding-top: 0.85rem;
+  margin-top: 0.85rem;
+  text-align: center;
+}
+.ratingLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reviewSection {
+  grid-column: 1 / -1;
+  margin-top: 0.85rem;
+  border-top: 1px solid var(--border-primary);
+  padding-top: 1rem;
+}
+.reviewEditor {
+  margin-top: 0.5rem;
+}
+.reviewTextarea {
+  width: 100%;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  color: var(--text-input);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 0.6rem;
+  min-height: 90px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.reviewTextarea::placeholder {
+  color: var(--text-placeholder);
+}
+.reviewTextarea:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: var(--ring-focus-shadow);
+}
+.reviewDisplay {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  white-space: pre-wrap;
+  background-color: var(--bg-input-disabled);
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  line-height: 1.6;
+}
+.reviewActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+.reviewSaveButton,
+.reviewCancelButton {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: var(--border-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+}
+.reviewSaveButton {
+  background-color: var(--brand-pink-default);
+  color: var(--text-button);
+  border-color: var(--brand-pink-default);
+}
+.reviewSaveButton:hover {
+  background-color: var(--brand-pink-dark);
+  border-color: var(--brand-pink-dark);
+}
+.reviewCancelButton {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
+}
+.reviewCancelButton:hover {
+  background-color: var(--bg-input-disabled);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+.reviewSaveButton:focus-visible,
+.reviewCancelButton:focus-visible {
+  outline: none;
+  box-shadow: var(--button-focus-shadow);
+}
+
+/* Loading/Error States */
+.loading,
+.error {
+  padding: 6rem 2rem;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.error {
+  color: var(--text-error);
+}

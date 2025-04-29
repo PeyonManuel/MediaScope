@@ -1,0 +1,139 @@
+/* src/components/layout/Header.module.css */
+/* Add these styles, assuming you already have styles for .header, .logo, .rightSection, etc. */
+/* Make sure to use your global CSS variables if applicable */
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 5%; /* Adjust padding as needed */
+  background-color: var(--bg-form, #fff); /* Example using a global variable */
+  border-bottom: 1px solid var(--border-primary, #e5e7eb);
+  position: sticky; /* Make header sticky */
+  top: 0;
+  z-index: 50; /* Ensure it's above other content */
+  gap: 1rem; /* Add gap between items */
+}
+
+/* --- Styles for the Back Button --- */
+.backButton {
+  background-color: transparent;
+  border: none;
+  padding: 0.5rem; /* Padding around the icon */
+  margin-right: 0.5rem; /* Space between back button and logo */
+  border-radius: 50%; /* Make it circular */
+  cursor: pointer;
+  display: inline-flex; /* Align icon nicely */
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #6b7280); /* Use secondary text color for icon */
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: var(
+    --bg-input-disabled,
+    #f3f4f6
+  ); /* Subtle hover background */
+  color: var(--text-primary, #111827); /* Darker icon on hover */
+}
+
+.backButton:focus-visible {
+  outline: none;
+  box-shadow: var(
+    --button-focus-shadow,
+    0 0 0 2px white,
+    0 0 0 4px blue
+  ); /* Use global focus style */
+}
+
+/* Control the size of the SVG icon inside the button */
+.backButton svg {
+  width: 1.25rem; /* Adjust size as needed (e.g., 20px) */
+  height: 1.25rem;
+}
+/* --- End Back Button Styles --- */
+
+.logo {
+  /* Styles for your logo link */
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: var(--text-logo, #ec4899); /* Example */
+  text-decoration: none;
+  margin-right: auto; /* Push navigation and controls to the right */
+}
+.logo a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* Gap between nav and controls */
+}
+
+.nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 1.5rem; /* Space between nav links */
+  align-items: center;
+}
+
+.nav a {
+  text-decoration: none;
+  color: var(--text-secondary, #6b7280);
+  font-weight: 500;
+  transition: color 0.2s ease;
+  padding: 0.25rem 0; /* Add some vertical padding for easier clicking */
+  border-bottom: 2px solid transparent; /* Prepare for active state */
+}
+
+.nav a:hover {
+  color: var(--text-primary, #111827);
+}
+
+/* Style for the active link using the class applied by TanStack Router's activeProps */
+.nav a.active {
+  color: var(--text-link, #ec4899); /* Use link/accent color */
+  border-bottom-color: var(--text-link, #ec4899);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Space between control buttons */
+}
+
+.themeToggleButton {
+  background-color: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #6b7280);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.themeToggleButton:hover {
+  background-color: var(--bg-input-disabled, #f3f4f6);
+  color: var(--text-primary, #111827);
+}
+
+.themeToggleButton:focus-visible {
+  outline: none;
+  box-shadow: var(--button-focus-shadow, 0 0 0 2px white, 0 0 0 4px blue);
+}
+
+.themeToggleButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}

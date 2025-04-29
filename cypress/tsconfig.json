@@ -1,0 +1,26 @@
+{
+  // Inherit settings from your main tsconfig.json for consistency
+  "extends": "../tsconfig.json", // Adjust path if your main tsconfig is elsewhere
+
+  // Override or add specific options for Cypress tests
+  "compilerOptions": {
+    // --- Crucial: Include Cypress types ---
+    // This tells TypeScript about the global 'cy' object and its methods
+    "types": ["cypress", "@testing-library/cypress"], // Add cypress-testing-library if you use it
+
+    // --- Other common settings for Cypress ---
+    "sourceMap": false, // Not usually needed for test files
+    "isolatedModules": false, // Often set to false for test files
+    "noEmit": true // Ensure TS only type-checks, doesn't emit JS for tests
+    // You might not need 'lib' or 'target' here if extended correctly
+  },
+  // Tell TypeScript to ONLY include files within the cypress folder for THIS config
+  "include": [
+    "**/*.ts", // Include all .ts files in cypress/ and subfolders
+    "**/*.tsx" // Include .tsx files if you use TSX in support files/commands
+    // "../node_modules/cypress" // Sometimes needed explicitly, try without first
+  ],
+  "exclude": [
+    // Exclude things you don't want checked by this config if necessary
+  ]
+}

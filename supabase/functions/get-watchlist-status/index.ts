@@ -2,7 +2,7 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'; // Or latest stable Deno std lib
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'; // Use esm.sh for Deno import
-import { corsHeaders } from '../_shared/cors.ts'; // Assume shared CORS headers helper
+import { corsHeaders } from '../_shared/cors.js'; // Assume shared CORS headers helper
 
 serve(async (req) => {
   // 1. Handle Preflight CORS request

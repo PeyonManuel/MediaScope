@@ -1,0 +1,130 @@
+/* src/components/MovieStarRating/StarRating.module.css */
+/* Styles for both StarRating (interactive) and StarRatingDisplay */
+/* Uses global variables from index.css */
+/* Added yellow color and uses CSS clip-path for half-star display */
+/* Added justify-content for centering */
+
+/* Define star colors */
+:root {
+  --star-fill-color: #facc15; /* Tailwind yellow-400 */
+  --star-empty-color: var(--border-primary, #ccc);
+  --star-hover-color: #fde047;
+  --star-stroke-color: #a16207; /* Optional */
+}
+html.dark {
+  --star-fill-color: #facc15;
+  --star-empty-color: var(--border-primary, #4b5563);
+  --star-hover-color: #fef08a;
+  --star-stroke-color: #ca8a04;
+}
+
+.starRatingContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* --- NEW: Center stars horizontally within the container --- */
+  justify-content: center;
+  /* --- Note: To center the whole block, style its parent container --- */
+  gap: 0.1rem;
+  line-height: 1;
+  /* Optional: Give a min-width if needed, but justify-content is often better */
+  /* min-width: calc( (1.25rem * 5) + (0.1rem * 4) + 2em ); Approx width */
+}
+
+.starButton {
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--star-empty-color);
+  transition:
+    color 0.1s ease-in-out,
+    transform 0.1s ease-in-out;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.starSvg {
+  /* Size is controlled by --star-icon-size style prop in the component */
+}
+
+/* Hover effect */
+.starRatingContainer:not(.disabled):hover .starButton {
+  color: var(--star-hover-color) !important;
+  opacity: 0.6;
+}
+.starRatingContainer:not(.disabled) .starButton:hover ~ .starButton {
+  color: var(--star-empty-color) !important;
+  opacity: 1;
+}
+.starRatingContainer:not(.disabled) .starButton:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+/* State classes applied by JS */
+.starButton.filled .starSvg,
+.starButton.half .starSvg {
+  color: var(--star-fill-color);
+  fill: currentColor;
+}
+.starButton.empty .starSvg {
+  color: var(--star-empty-color);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+/* CSS Clip-Path for Half Star */
+.starButton.half .starSvg {
+  clip-path: inset(0 50% 0 0);
+}
+
+/* Disabled state */
+.starRatingContainer.disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+.starRatingContainer.disabled .starButton {
+  cursor: default;
+  pointer-events: none;
+}
+.starRatingContainer.disabled .starButton:hover {
+  transform: none;
+  opacity: 1;
+}
+.starRatingContainer.disabled:hover .starButton {
+  opacity: 1;
+}
+
+/* Clear Button Styles */
+.clearButton {
+  background: none;
+  border: none;
+  padding: 0 0.5rem;
+  margin: 0;
+  margin-left: 0.5rem; /* Keep margin */
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 1.2em;
+  line-height: 1;
+  transition: color 0.15s ease-out;
+  min-width: 1.5em; /* Adjust based on font size */
+  text-align: center;
+  position: absolute;
+  right: 0;
+}
+.clearButton:hover {
+  color: var(--text-error, #b91c1c);
+}
+.clearButton:focus-visible {
+  outline: 1px dashed var(--text-secondary);
+  outline-offset: 2px;
+}
+/* Button is conditionally rendered, so no display: none needed here */
+/* .starRatingContainer.disabled .clearButton { display: none; } */
