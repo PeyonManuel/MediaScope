@@ -83,7 +83,8 @@ function ItemDetailsPage() {
         mediaType,
         externalId,
       });
-      if ('error' in response) throw new Error(response.error);
+      if ('error' in response && typeof response.error === 'string')
+        throw new Error(response.error);
       return response; // Expects { isOnBacklog: boolean }
     },
     enabled: !!currentUser && !!mediaType && !!externalId,
@@ -106,7 +107,8 @@ function ItemDetailsPage() {
         mediaType,
         externalId,
       });
-      if ('error' in response) throw new Error(response.error);
+      if ('error' in response && typeof response.error === 'string')
+        throw new Error(response.error);
       return response; // Expects { mediaLog: UserMediaLog | null }
     },
     enabled: !!currentUser && !!mediaType && !!externalId,

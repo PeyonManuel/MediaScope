@@ -143,10 +143,11 @@ function UserProfileIcon() {
             Edit Profile
           </Link>
           <Link
-            to={`/profile/${userId}`} // Example link to a public profile view page
+            to={'/profile/$userId'} // Example link to a public profile view page
             className={styles.menuItem}
             role="menuitem"
-            onClick={() => setIsMenuOpen(false)}>
+            onClick={() => setIsMenuOpen(false)}
+            params={{ userId: userId || '' }}>
             View Profile
           </Link>
           <hr className={styles.menuDivider} />

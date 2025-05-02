@@ -290,7 +290,7 @@ function ViewProfilePage() {
             </div>
           </div>
           {isOwnProfile && (
-            <Link to="/profile/edit" className={styles.editProfileButton}>
+            <Link to="/edit/profile" className={styles.editProfileButton}>
               Edit Profile
             </Link>
           )}

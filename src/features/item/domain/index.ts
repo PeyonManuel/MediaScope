@@ -62,8 +62,8 @@ export interface SearchMediaSuccessResponse {
   // Renamed from SearchMovieSuccess
   page: number;
   results: MediaItem[]; // Use the generic MediaItem
-  total_pages: number;
-  total_results: number;
+  total_pages?: number;
+  total_results?: number;
 }
 
 // Type for data used when logging/updating a media item

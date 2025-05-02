@@ -132,7 +132,7 @@ export const searchMediaGoogleBooks = async (
   query: string,
   page = 1,
   maxResults = 20
-) => {
+): Promise<MediaListApiResponse> => {
   if (!query) return { page: 1, results: [], total_pages: 0, total_results: 0 };
   const pageIndex = Math.max(0, page - 1);
   const apiResponse = await fetchGoogleBooks({
@@ -141,7 +141,7 @@ export const searchMediaGoogleBooks = async (
     maxResults: maxResults,
     // projection: 'lite' // Use 'lite' for potentially faster search results
   });
-  const normalizedResults: GoogleBooksApiResponse = (apiResponse.items ?? [])
+  const normalizedResults: MediaItem[] = (apiResponse.items ?? [])
     .map(normalizeGoogleBook)
     .filter((item: GoogleBooksVolumeItem) => item !== null); // Filter out nulls from normalization
   const totalPages =

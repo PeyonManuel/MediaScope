@@ -48,14 +48,14 @@ function Header() {
       <div className={styles.rightSection}>
         <nav className={styles.nav}>
           <ul>
-            <li>
+            {/* <li>
               <Link
                 to="/browse"
                 search={{ page: 1 }}
                 activeProps={{ className: styles.active }}>
                 Browse
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link to="/search" activeProps={{ className: styles.active }}>
                 Search

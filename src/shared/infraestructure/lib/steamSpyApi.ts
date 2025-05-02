@@ -146,16 +146,16 @@ function normalizeSteamSpyGame(item: SteamSpyApp): MediaItem | null {
     production_companies: null,
 
     // Videos
-    primaryVideo: null,
+    // primaryVideo: null,
 
     // Type-Specific Length/Size
-    runtimeMinutes: null,
-    numberOfSeasons: null,
-    numberOfEpisodes: null,
+    // runtimeMinutes: null,
+    // numberOfSeasons: null,
+    // numberOfEpisodes: null,
     pageCount: null,
     chapters: null,
     volumes: null,
-    playtimeHours: playtimeHours, // Added playtime
+    // playtimeHours: playtimeHours, // Added playtime
     platforms: [], // SteamSpy often focuses on Steam data, platforms might need other source
   };
 }

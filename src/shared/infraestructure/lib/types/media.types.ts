@@ -83,7 +83,7 @@ export interface MediaItem {
 }
 
 export interface MediaListApiResponse {
-  page?: number;
+  page: number;
   results: MediaItem[]; // Contains normalized items
   total_pages?: number;
   total_results?: number;
