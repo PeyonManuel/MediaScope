@@ -14,14 +14,16 @@
     "@reduxjs/toolkit": "^2.7.0",
     "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-query": "^5.72.1",
-    "@tanstack/react-router": "^1.116.0",
+    "@tanstack/react-router": "^1.119.0",
     "@tanstack/react-router-devtools": "^1.116.0",
+    "@tanstack/react-start": "^1.119.0",
     "axios": "^1.8.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-image-crop": "^11.0.10",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.5.0"
+    "react-router-dom": "^7.5.0",
+    "vinxi": "^0.5.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
