@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { Link, useNavigate } from '@tanstack/react-router'; // Use router Link/navigate
 import styles from './UserProfileMenu.module.css';
 import { selectCurrentUser } from '../../../../../authentication/infraestructure/store/authSlice';
-import { supabase } from '../../../../../../lib/supabaseClient';
+import { supabase } from '../../../../../../shared/infraestructure/lib/supabaseClient';
 import { DefaultAvatarIcon } from '../../../../../../shared/infraestructure/components/ui/svgs';
 
 interface ProfileMenuData {

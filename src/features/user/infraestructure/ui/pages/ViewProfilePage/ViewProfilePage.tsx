@@ -1,17 +1,23 @@
+// src/pages/ViewProfilePage/ViewProfilePage.tsx (Example path)
+// Added media type tabs for filtering the log list
+
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from '@tanstack/react-router';
 import { useSelector } from 'react-redux';
 import styles from './ViewProfilePage.module.css'; // Import the consolidated CSS
-import { WatchedItem } from '../../../../../../lib/types/supabase';
+import { UserMediaLog } from '../../../../../item/domain';
+import { MediaType } from '../../../../../../shared/infraestructure/lib/types/media.types';
 import { viewProfileRoute } from '../../../../../../routes/routes';
 import { selectCurrentUser } from '../../../../../authentication/infraestructure/store/authSlice';
 import {
   invokeEdgeFunction,
   supabase,
-} from '../../../../../../lib/supabaseClient';
-import WatchedMovieList from '../../components/watchedMovieList/WatchedMovieList';
+} from '../../../../../../shared/infraestructure/lib/supabaseClient';
+import UserMediaLogList from '../../components/userMediaLogList/UserMediaLogList';
+// --- Import generic UserMediaLog type ---
 
+// Type for the profile data fetched for display
 interface ProfileDisplayData {
   user_id: string;
   username: string | null;
@@ -19,8 +25,10 @@ interface ProfileDisplayData {
   bio: string | null;
 }
 
-interface GetWatchedListResponse {
-  watchedList: WatchedItem[] | null;
+// Type for the response from the get-user-watched-list function
+// It returns ALL log items, filtering happens client-side in this version
+interface GetUserLogListResponse {
+  watchedList: UserMediaLog[] | null; // Renamed for clarity
 }
 
 // Placeholder Icon if no avatar
@@ -41,15 +49,24 @@ const DefaultAvatarIcon = () => (
   </svg>
 );
 
+// Define the available media types for tabs + 'all'
+const MEDIA_TYPES: MediaType[] = ['movie', 'tv', 'game', 'book', 'manga'];
+type SelectedLogType = MediaType | 'all';
+
 function ViewProfilePage() {
   const params = useParams({ from: viewProfileRoute.id });
   const profileUserId = params.userId;
   const loggedInUser = useSelector(selectCurrentUser);
 
+  // --- State for Filters/Search ---
   const [sortBy, setSortBy] = useState('updated_at_desc');
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [likedOnly, setLikedOnly] = useState(false);
+  // --- NEW: State for selected media type tab ---
+  const [selectedLogType, setSelectedLogType] =
+    useState<SelectedLogType>('all');
 
+  // --- Query to fetch profile data (no change) ---
   const profileQueryKey = ['profile', profileUserId];
   const {
     data: profileData,
@@ -72,18 +89,24 @@ function ViewProfilePage() {
     staleTime: 1000 * 60 * 15,
   });
 
-  const watchedListQueryKey = ['watched', 'list', profileUserId];
+  // --- Query to fetch FULL watched list (no type filter sent to backend yet) ---
+  // Query key still only depends on user ID, as we fetch all types for now
+  const userLogListQueryKey = ['user-log', 'list-all', profileUserId];
   const {
-    data: watchedListData,
+    data: userLogListData,
     isLoading: isLoadingList,
     isError: isListError,
     error: listError,
-  } = useQuery<GetWatchedListResponse, Error>({
-    queryKey: watchedListQueryKey,
-    queryFn: async (): Promise<GetWatchedListResponse> => {
+  } = useQuery<GetUserLogListResponse, Error>({
+    queryKey: userLogListQueryKey,
+    queryFn: async (): Promise<GetUserLogListResponse> => {
+      // This function fetches ALL log items for the user
       if (!profileUserId || typeof profileUserId !== 'string') {
-        return { watchedList: [] };
+        return { watchedList: [] }; // Use watchedList key to match response type
       }
+      console.log(
+        `UI: Calling get-user-watched-list (all types) for user: ${profileUserId}`
+      );
       const functionNameWithParam = `get-user-watched-list?userId=${encodeURIComponent(profileUserId)}`;
       const response = await invokeEdgeFunction(functionNameWithParam, {
         method: 'GET',
@@ -94,18 +117,27 @@ function ViewProfilePage() {
       if ('error' in response && response.error) {
         throw new Error(String(response.error));
       }
-      return response as GetWatchedListResponse;
+      // Rename response key if needed to match GetUserLogListResponse
+      return response as GetUserLogListResponse;
     },
     enabled: !!profileUserId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, // Cache the full list
   });
 
-  const watchedList = watchedListData?.watchedList ?? [];
-
+  // Get the full list, default to empty array
+  const fullLogList = userLogListData?.watchedList ?? [];
+  // --- Client-side Filtering and Sorting (Operates on fullLogList) ---
   const filteredAndSortedList = useMemo(() => {
-    if (!watchedList) return [];
-    let list = [...watchedList];
+    if (!fullLogList) return [];
 
+    // 1. Filter by Selected Media Type Tab
+    let typeFilteredList =
+      selectedLogType === 'all' ? fullLogList : (
+        fullLogList.filter((item) => item.media_type === selectedLogType)
+      );
+
+    // 2. Apply other filters (rating, liked) to the type-filtered list
+    let list = [...typeFilteredList]; // Create mutable copy
     if (ratingFilter !== null) {
       list = list.filter(
         (item) => item.rating !== null && item.rating >= ratingFilter
@@ -115,6 +147,7 @@ function ViewProfilePage() {
       list = list.filter((item) => item.liked === true);
     }
 
+    // 3. Sort the resulting list
     list.sort((a, b) => {
       switch (sortBy) {
         case 'rating_desc':
@@ -131,22 +164,66 @@ function ViewProfilePage() {
       }
     });
     return list;
-  }, [watchedList, sortBy, ratingFilter, likedOnly /*, searchTerm */]);
-
-  // --- Calculate Statistics (Based on original watchedList) ---
+    // Update dependencies
+  }, [fullLogList, selectedLogType, sortBy, ratingFilter, likedOnly]);
+  // --- Calculate Statistics (Based on the FULL original watchedList) ---
   const stats = useMemo(() => {
-    const totalWatched = watchedList.length;
-    const ratedItems = watchedList.filter((item) => item.rating !== null);
-    const likedCount = watchedList.filter((item) => item.liked === true).length;
-    const averageRating =
-      ratedItems.length > 0 ?
-        ratedItems.reduce((sum, item) => sum + (item.rating ?? 0), 0) /
-        ratedItems.length
-      : null;
-    return { totalWatched, averageRating, likedCount };
-  }, [watchedList]);
+    const totalItems = fullLogList.length;
+    // Calculate stats per type
+    const statsByType = MEDIA_TYPES.reduce(
+      (acc, type) => {
+        const itemsOfType = fullLogList.filter(
+          (item) => item.media_type === type
+        );
+        const ratedItems = itemsOfType.filter((item) => item.rating !== null);
+        const likedCount = itemsOfType.filter(
+          (item) => item.liked === true
+        ).length;
+        const averageRating =
+          (
+            ratedItems.length > 0 && type !== 'game' // Exclude games from avg rating calc
+          ) ?
+            ratedItems.reduce((sum, item) => sum + (item.rating ?? 0), 0) /
+            ratedItems.length
+          : null;
+        acc[type] = {
+          count: itemsOfType.length,
+          likedCount: likedCount,
+          averageRating:
+            averageRating ? parseFloat(averageRating.toFixed(1)) : null, // Avg out of 5 stars
+        };
+        return acc;
+      },
+      {} as Record<
+        MediaType,
+        { count: number; likedCount: number; averageRating: number | null }
+      >
+    );
 
-  const isLoading = isLoadingProfile || isLoadingList; // Simplified loading check
+    // Calculate overall average (excluding games)
+    const allRatedItems = fullLogList.filter(
+      (item) => item.rating !== null && item.media_type !== 'game'
+    );
+    const overallAverageRating =
+      allRatedItems.length > 0 ?
+        allRatedItems.reduce((sum, item) => sum + (item.rating ?? 0), 0) /
+        allRatedItems.length
+      : null;
+
+    return {
+      totalItems,
+      statsByType,
+      overallAverageRating:
+        overallAverageRating ?
+          parseFloat(overallAverageRating.toFixed(1))
+        : null, // Avg out of 5 stars
+      overallLikedCount: fullLogList.filter((item) => item.liked === true)
+        .length,
+    };
+  }, [fullLogList]);
+
+  // --- Render Logic ---
+  const isLoading = isLoadingProfile || isLoadingList;
 
   if (isLoading) {
     return <div className={styles.loadingMessage}>Loading profile...</div>;
@@ -171,8 +248,10 @@ function ViewProfilePage() {
 
   return (
     <main className={styles.profilePageContainer}>
+      {/* Profile Header Section */}
       <section className={styles.profileHeader}>
         <div className={styles.profileAvatarContainer}>
+          {' '}
           {profileData?.avatar_url ?
             <img
               src={profileData.avatar_url}
@@ -182,27 +261,29 @@ function ViewProfilePage() {
           : <div className={styles.profileAvatarPlaceholder}>
               <DefaultAvatarIcon />
             </div>
-          }
+          }{' '}
         </div>
         <div className={styles.profileInfo}>
           <h1 className={styles.profileUsername}>{profileUsername}</h1>
           {profileData?.bio && (
             <p className={styles.profileBio}>{profileData.bio}</p>
           )}
-          {/* Display Stats */}
+          {/* Display Stats (Overall) */}
           <div className={styles.statsContainer}>
             <div className={styles.statItem}>
-              <span className={styles.statValue}>{stats.totalWatched}</span>
-              <span className={styles.statLabel}>Watched</span>
-            </div>
-            <div className={styles.statItem}>
-              <span className={styles.statValue}>{stats.likedCount}</span>
-              <span className={styles.statLabel}>Likes</span>
+              <span className={styles.statValue}>{stats.totalItems}</span>
+              <span className={styles.statLabel}>Total Items</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statValue}>
-                {stats.averageRating ?
-                  stats.averageRating.toFixed(1) + ' ★'
+                {stats.overallLikedCount}
+              </span>
+              <span className={styles.statLabel}>Total Likes</span>
+            </div>
+            <div className={styles.statItem}>
+              <span className={styles.statValue}>
+                {stats.overallAverageRating ?
+                  stats.overallAverageRating + ' ★'
                 : '-'}
               </span>
               <span className={styles.statLabel}>Avg Rating</span>
@@ -216,7 +297,30 @@ function ViewProfilePage() {
         </div>
       </section>
 
-      <section className={styles.watchedSection}>
+      {/* Logged Media Section */}
+      <section className={styles.loggedSection}>
+        {/* --- NEW: Media Type Tabs --- */}
+        <nav className={styles.mediaTypeTabs}>
+          <button
+            onClick={() => setSelectedLogType('all')}
+            className={`${styles.tabButton} ${selectedLogType === 'all' ? styles.active : ''}`}>
+            All ({stats.totalItems})
+          </button>
+          {MEDIA_TYPES.map((type) => (
+            <button
+              key={type}
+              onClick={() => setSelectedLogType(type)}
+              className={`${styles.tabButton} ${selectedLogType === type ? styles.active : ''}`}>
+              {/* Capitalize type for display */}
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {/* Show count for this type */}(
+              {stats.statsByType[type]?.count ?? 0})
+            </button>
+          ))}
+        </nav>
+        {/* --- End Tabs --- */}
+
+        {/* Filter/Sort Controls (Apply to selected tab's list) */}
         <div className={styles.controlsContainer}>
           <div className={styles.filterGroup}>
             <label htmlFor="sort-select">Sort By:</label>
@@ -226,28 +330,39 @@ function ViewProfilePage() {
               onChange={(e) => setSortBy(e.target.value)}
               className={styles.selectInput}>
               <option value="updated_at_desc">Last Updated</option>
-              <option value="rating_desc">Highest Rated</option>
-              <option value="rating_asc">Lowest Rated</option>
+              {/* Disable rating sort if viewing games and rating is N/A */}
+              {selectedLogType !== 'game' && (
+                <option value="rating_desc">Highest Rated</option>
+              )}
+              {selectedLogType !== 'game' && (
+                <option value="rating_asc">Lowest Rated</option>
+              )}
               <option value="liked_first">Liked First</option>
+              {/* Add Title/Release Date sort here if needed */}
             </select>
           </div>
-          <div className={styles.filterGroup}>
-            <label htmlFor="rating-filter">Min Rating:</label>
-            <select
-              id="rating-filter"
-              value={ratingFilter ?? ''}
-              onChange={(e) =>
-                setRatingFilter(e.target.value ? Number(e.target.value) : null)
-              }
-              className={styles.selectInput}>
-              <option value="">Any</option>
-              {[9, 8, 7, 6, 5, 4, 3, 2, 1].map((r) => (
-                <option key={r} value={r}>
-                  {r / 2} ★+
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Disable rating filter if viewing games */}
+          {selectedLogType !== 'game' && (
+            <div className={styles.filterGroup}>
+              <label htmlFor="rating-filter">Min Rating:</label>
+              <select
+                id="rating-filter"
+                value={ratingFilter ?? ''}
+                onChange={(e) =>
+                  setRatingFilter(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+                className={styles.selectInput}>
+                <option value="">Any</option>
+                {[9, 8, 7, 6, 5, 4, 3, 2, 1].map((r) => (
+                  <option key={r} value={r}>
+                    {r / 2} ★+
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className={`${styles.filterGroup} ${styles.checkboxGroup}`}>
             <input
               type="checkbox"
@@ -256,19 +371,23 @@ function ViewProfilePage() {
               onChange={(e) => setLikedOnly(e.target.checked)}
               className={styles.checkboxInput}
             />
-            <label htmlFor="liked-only-filter">Liked Only</label>
+            <label htmlFor="liked-only-filter">Liked Only ❤️</label>
           </div>
         </div>
 
+        {/* Logged Media List */}
         <div className={styles.listContainer}>
+          {/* Pass the FILTERED & SORTED list to UserMediaLogList */}
           {filteredAndSortedList.length > 0 && (
-            <WatchedMovieList watchedItems={filteredAndSortedList} />
+            <UserMediaLogList logItems={filteredAndSortedList} />
           )}
+          {/* Show message if filters result in empty list for the selected tab */}
           {!isLoading && filteredAndSortedList.length === 0 && (
             <p className={styles.infoMessage}>
-              {watchedList.length === 0 ?
-                'No movies logged yet.'
-              : 'No movies match your current filters.'}
+              {fullLogList.length === 0 ?
+                `No ${selectedLogType === 'all' ? 'items' : selectedLogType} logged yet.`
+              : `No ${selectedLogType === 'all' ? 'items' : selectedLogType} match your current filters.`
+              }
             </p>
           )}
         </div>

@@ -1,0 +1,137 @@
+/* src/pages/SearchMediaPage/SearchMediaPage.module.css */
+/* Styles using global variables from index.css */
+
+.searchPageContainer {
+  color: var(--text-primary);
+  padding: var(--header-height, 4rem) 5% 4rem 5%; /* Use header height variable */
+  max-width: 1200px; /* Allow wider layout for results */
+  margin: 0 auto;
+  min-height: calc(100vh - var(--header-height, 4rem));
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 2rem; /* Increased space */
+  text-align: center;
+}
+
+/* Container for Search Input AND Filters */
+.controlsContainer {
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping */
+  gap: 1rem 1.5rem; /* Gap between items */
+  align-items: center;
+  margin-bottom: 2.5rem; /* Space below controls */
+  padding: 1rem; /* Add padding */
+  background-color: var(--bg-form); /* Use form background */
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.searchBar {
+  flex-grow: 1; /* Allow search bar to take most space */
+  min-width: 250px; /* Minimum width before wrapping */
+  position: relative;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  font-size: 1.1rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  color: var(--text-input);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.searchInput::placeholder {
+  color: var(--text-placeholder);
+}
+
+.searchInput:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: var(--ring-focus-shadow);
+}
+
+/* Styles for Filter Group (Label + Select) */
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Space between label and select */
+}
+
+.filterGroup label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.selectInput {
+  padding: 0.5rem 0.75rem; /* Match other inputs/buttons if needed */
+  font-size: 0.9rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-input);
+  color: var(--text-input);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  min-width: 130px; /* Adjust width as needed */
+  cursor: pointer;
+  /* Add default arrow or style custom one */
+}
+
+.selectInput:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  box-shadow: var(--ring-focus-shadow);
+}
+
+/* Results Area */
+.resultsContainer {
+  margin-top: 1rem;
+}
+
+/* Messages */
+.loadingMessage,
+.errorMessage,
+.noResultsMessage,
+.infoMessage {
+  text-align: center;
+  padding: 4rem 1rem;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  /* Optional: Add background/border if desired */
+  /* background-color: var(--bg-form); */
+  /* border-radius: var(--border-radius-md); */
+  /* border: 1px solid var(--border-primary); */
+  /* margin-top: 2rem; */
+}
+
+.errorMessage {
+  color: var(--text-error);
+  font-weight: 500;
+}
+
+.noResultsMessage strong,
+.infoMessage strong {
+  color: var(--text-primary);
+}
+
+/* Pagination Wrapper */
+.paginationWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+  padding-bottom: 1rem;
+}
+
+/* Styles for MediaList and MediaCard are in their own modules */

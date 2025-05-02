@@ -1,0 +1,78 @@
+/* src/shared/ui/components/MediaList/MediaList.module.css */
+/* Styles using global variables from index.css */
+
+.listGrid {
+  display: grid;
+  /* Use the same responsive grid as WatchedMovieList */
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1rem 0.75rem; /* Tighter gap */
+
+  @media (min-width: 640px) {
+    /* sm */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1.25rem 1rem;
+  }
+  @media (min-width: 1024px) {
+    /* lg */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+  @media (min-width: 1280px) {
+    /* xl */
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(180px, 1fr)
+    ); /* Slightly larger base */
+    gap: 1.75rem 1.25rem; /* Adjust gap */
+  }
+}
+
+/* --- Skeleton Loading Styles --- */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeletonCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden; /* Hide overflowing pulse */
+  background-color: var(--bg-input-disabled); /* Use a subtle background */
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeletonImage {
+  width: 100%;
+  aspect-ratio: 2 / 3; /* Match poster aspect ratio */
+  background-color: var(--border-primary); /* Slightly darker color */
+  margin-bottom: 0.5rem;
+}
+
+.skeletonText {
+  height: 0.8em; /* Simulate text line height */
+  background-color: var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  margin: 0.25rem 0.25rem 0.5rem 0.25rem; /* Add some margin */
+}
+
+.skeletonTextShort {
+  width: 60%; /* Make the second line shorter */
+}
+
+/* --- Empty List Styles --- */
+.emptyListContainer {
+  /* Span across all grid columns */
+  grid-column: 1 / -1;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.emptyListMessage {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}

@@ -2,11 +2,11 @@ import { StrictMode } from 'react';
 import './index.css';
 import App from './App';
 import {
-  browseRoute,
+  // browseRoute,
   loginRoute,
   indexRoute,
   registerRoute,
-  movieRoute,
+  itemRoute,
   forgotPasswordRoute,
   searchRoute,
   editProfileRoute,
@@ -39,8 +39,8 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
   registerRoute,
-  browseRoute,
-  movieRoute,
+  // browseRoute,
+  itemRoute,
   forgotPasswordRoute,
   searchRoute,
   editProfileRoute,
@@ -51,6 +51,9 @@ const router = createRouter({
   routeTree,
   defaultNotFoundComponent: NotFoundPage,
   scrollRestoration: true,
+  context: {
+    queryClient: queryClient,
+  },
 });
 
 declare module '@tanstack/react-router' {

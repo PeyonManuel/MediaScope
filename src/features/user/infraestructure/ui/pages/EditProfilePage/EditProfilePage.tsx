@@ -19,7 +19,7 @@ import ReactCrop, {
 } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { selectCurrentUser } from '../../../../../authentication/infraestructure/store/authSlice';
-import { supabase } from '../../../../../../lib/supabaseClient';
+import { supabase } from '../../../../../../shared/infraestructure/lib/supabaseClient';
 import { DefaultAvatarIcon } from '../../../../../../shared/infraestructure/components/ui/svgs';
 import { ProfileFormData, ProfileResponse } from '../../../../domain';
 import { updateUserProfileUseCase } from '../../../../useCases/useCases';
@@ -222,10 +222,9 @@ function EditProfilePage() {
   const uploadAvatarMutation = useMutation<{ avatarUrl: string }, Error, Blob>({
     mutationFn: async (blob: Blob): Promise<{ avatarUrl: string }> => {
       if (!currentUser || !blob) throw new Error('User or blob missing');
-      const fileExt = selectedFile?.name.split('.').pop() || 'png';
       const mimeType = selectedFile?.type || 'image/png';
-      const fileName = `${currentUser.id}/${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `id_${new Date().toISOString().replace(/[-:.]/g, '').slice(0, -1)}`;
+      const filePath = `${currentUser.id}/${fileName}`;
       const croppedFile = new File([blob], fileName, { type: mimeType });
       setUploading(true);
       const { error: uploadError } = await supabase.storage

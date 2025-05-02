@@ -1,4 +1,4 @@
-import { supabase } from '../../../../lib/supabaseClient';
+import { supabase } from '../../../../shared/infraestructure/lib/supabaseClient';
 import { AuthenticationPort, RegisterAuth, UserSession } from '../../domain';
 
 export class SupabaseAuthenticationAdapter implements AuthenticationPort {

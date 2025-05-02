@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { selectTheme } from './store/features/ui/uiSlice';
 import Header from './shared/infraestructure/components/layout/Header';
 import { Outlet, ScrollRestoration } from '@tanstack/react-router'; // <--- IMPORT Outlet
-import { supabase } from './lib/supabaseClient';
+import { supabase } from './shared/infraestructure/lib/supabaseClient';
 import { setUserSession } from './features/authentication/infraestructure/store/authSlice';
 import { useDispatch } from 'react-redux';
 

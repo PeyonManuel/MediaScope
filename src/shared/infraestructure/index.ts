@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from './lib/supabaseClient';
 import { CurrentUserResponse, SupabaseClientPort } from '../domain';
 
 export class SupabaseClientAdapter implements SupabaseClientPort {

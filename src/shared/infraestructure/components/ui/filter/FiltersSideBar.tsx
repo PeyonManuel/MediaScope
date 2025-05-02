@@ -1,6 +1,6 @@
 // src/features/movies/components/FiltersSidebar.tsx
 import React from 'react';
-import type { Genre } from '../../../../../lib/types/tmdb'; // Adjust path
+import type { Genre } from '../../../lib/types/media.types'; // Adjust path
 import styles from './FiltersSidebar.module.css'; // Create this CSS file
 
 // Define sorting options matching TMDB API values

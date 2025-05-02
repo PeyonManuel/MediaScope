@@ -1,0 +1,158 @@
+/* src/shared/ui/components/MediaCard/MediaCard.module.css */
+/* Styles for generic MediaCard, Letterboxd Inspired */
+/* Uses global variables from index.css */
+
+.cardLink {
+  display: block; /* Make link a block element */
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--border-radius-sm); /* Apply rounding to link */
+  transition:
+    transform 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+  /* Add outline for focus visibility on the link itself */
+  outline-offset: 2px;
+}
+.cardLink:focus {
+  outline: none; /* Remove default */
+}
+.cardLink:focus-visible {
+  outline: 2px solid var(--border-focus); /* Use focus color */
+  box-shadow: var(--button-focus-shadow); /* Optional: add focus shadow */
+}
+
+.card {
+  /* The inner div doesn't need much styling if link handles hover/focus */
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  height: 100%; /* Ensure card takes full height if in grid */
+}
+
+.posterWrapper {
+  display: block;
+  position: relative; /* For placeholder text */
+  background-color: var(--bg-input-disabled); /* Placeholder bg */
+  border-radius: var(--border-radius-sm); /* Match card */
+  overflow: hidden;
+  box-shadow: var(--shadow-md); /* Use global shadow */
+  line-height: 0; /* Remove extra space */
+  border: 1px solid var(--border-primary); /* Subtle border like LB */
+  transition:
+    border-color 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+}
+/* Apply hover effects to wrapper when link is hovered */
+.cardLink:hover .posterWrapper {
+  border-color: var(--text-secondary);
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.02); /* Slight scale */
+  z-index: 10; /* Bring to front on hover */
+}
+
+.posterImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3; /* Maintain poster aspect ratio */
+  object-fit: cover;
+  border-radius: inherit; /* Match wrapper's radius */
+  transition: transform 0.3s ease;
+}
+.cardLink:hover .posterImage {
+  transform: scale(1.04); /* Slight zoom on hover */
+}
+
+.posterPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 1rem;
+  border-radius: inherit;
+}
+
+.cardInfo {
+  padding: 0.5rem 0.1rem 0 0.1rem; /* Padding below poster */
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem; /* Tight gap */
+  margin-top: 0.25rem;
+  flex-grow: 1; /* Allow info to push indicators down if needed */
+}
+
+.mediaTitle {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Allow 2 lines for potentially longer titles */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.3em * 2); /* Reserve space for 2 lines */
+  transition: color 0.15s ease-out;
+}
+.cardLink:hover .mediaTitle {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
+
+.mediaYear {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.2;
+  margin-bottom: 0.25rem; /* Space before indicators */
+}
+
+/* User Interaction Indicators */
+.indicators {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem; /* Space between rating and like */
+  height: 14px; /* Set fixed height */
+  margin-top: auto; /* Push indicators to bottom if cardInfo grows */
+  padding-top: 0.1rem; /* Small space above indicators */
+}
+
+.userRating {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.05rem;
+}
+/* Style the StarRatingDisplay component internally */
+.userRating > * {
+  /* Target stars inside StarRatingDisplay */
+  color: var(--accent-color, #00b020); /* Letterboxd green */
+  font-size: 0.7rem; /* Smaller stars */
+  width: 11px;
+  height: 11px; /* Explicit size */
+  fill: currentColor;
+}
+
+.likedIndicator {
+  color: var(--brand-pink-default); /* Use pink for liked */
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+.likedIndicator svg {
+  width: 11px;
+  height: 11px;
+  fill: currentColor;
+}
+
+/* Optional: API Rating */
+.apiRating {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}

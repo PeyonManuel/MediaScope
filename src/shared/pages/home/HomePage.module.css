@@ -1,30 +1,97 @@
-/* src/pages/HomePage.module.css */
+/* src/pages/HomePage/HomePage.module.css */
+/* Styles using global variables from index.css */
+/* Added Tab styles */
+
 .homeContainer {
-  padding: 1.5rem 2rem; /* Adjust padding */
-  max-width: 1280px; /* Optional: Max width for content */
-  margin: 0 auto; /* Center content */
+  padding: var(--header-height, 4rem) 5% 4rem 5%;
+  max-width: 1600px;
+  margin: 0 auto;
+  color: var(--text-primary);
 }
 
+/* --- Tab Navigation Styles --- */
+.mediaTypeTabs,
+.listTypeTabs {
+  display: flex;
+  flex-wrap: wrap; /* Allow tabs to wrap */
+  gap: 0.5rem;
+  margin-bottom: 1rem; /* Space below main tabs */
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 0.5rem; /* Space above border */
+}
+
+.listTypeTabs {
+  margin-bottom: 2rem; /* More space below sub-tabs */
+  border-bottom: none; /* No border for sub-tabs */
+  padding-bottom: 0;
+}
+
+.tabButton,
+.subTabButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: 1rem; /* Main tabs slightly larger */
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+  transition: all 0.2s ease-out;
+  position: relative; /* For active indicator */
+  bottom: -1px; /* Align with border */
+  border-bottom: 3px solid transparent; /* Placeholder for active border */
+}
+
+.subTabButton {
+  font-size: 0.9rem; /* Sub-tabs slightly smaller */
+  padding: 0.4rem 0.8rem;
+  color: var(--text-secondary);
+  border-bottom: none; /* No bottom border for sub-tabs */
+  border-radius: var(--border-radius-sm); /* Smaller radius */
+}
+
+.tabButton:hover,
+.subTabButton:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-input-disabled); /* Subtle hover */
+}
+
+.tabButton.active {
+  color: var(--brand-pink-default); /* Use brand color */
+  font-weight: 600;
+  border-bottom-color: var(--brand-pink-default); /* Active indicator */
+  background-color: transparent; /* Ensure no bg override */
+}
+
+.subTabButton.active {
+  color: var(--text-primary);
+  font-weight: 600;
+  background-color: var(--bg-input-disabled); /* Highlight active sub-tab */
+}
+/* --- End Tab Styles --- */
+
 .section {
-  margin-bottom: 3rem; /* Space between sections */
+  margin-bottom: 3rem;
 }
 
 .sectionTitle {
-  font-size: 1.5rem; /* text-2xl */
-  line-height: 2rem;
-  font-weight: 600; /* font-semibold */
+  font-size: 1.75rem;
+  font-weight: 600;
   color: var(--text-heading);
-  margin-bottom: 1rem; /* Space below title */
-  border-bottom: 2px solid var(--border-focus); /* Accent border */
+  margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
-  display: inline-block; /* Keep border only under text */
+  /* Optional: remove border if tabs provide enough separation */
+  /* border-bottom: 1px solid var(--border-primary); */
 }
 
 .errorMessage {
-  color: var(--error-text);
-  background-color: var(--error-bg);
-  border: 1px solid var(--error-border);
-  padding: 0.75rem;
+  color: var(--text-error);
+  background-color: var(--bg-error);
+  border: 1px solid var(--border-error);
+  padding: 1rem;
   border-radius: var(--border-radius-md);
-  margin-bottom: 1rem;
+  text-align: center;
+  margin-top: 1rem; /* Space if list fails */
 }
+
+/* MediaList component handles its own grid styling */

@@ -1,4 +1,5 @@
 import { User } from '@supabase/supabase-js';
+import { MediaItem } from '../../../shared/infraestructure/lib/types/media.types';
 
 export interface ProfileFormData {
   username: string | null;
@@ -14,7 +15,21 @@ export interface ProfileResponse extends Omit<ProfileFormData, 'avatar_url'> {
   bio: string;
 }
 
+export interface GetUserLogInput {
+  profileId: string;
+  type: string;
+}
+
+export interface GetUserLogResponse {
+  // Renamed from SearchMovieSuccess
+  page: number;
+  results: MediaItem[]; // Use the generic MediaItem
+  total_pages: number;
+  total_results: number;
+}
+
 export interface UserPort {
   //   getUserProfile(userId: string): Promise<User>;
   updateUserProfile(formData: ProfileFormData): Promise<ProfileResponse>;
+  getUserLog(input: GetUserLogInput): Promise<GetUserLogResponse>;
 }
