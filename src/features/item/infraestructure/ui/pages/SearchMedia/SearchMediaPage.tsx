@@ -93,7 +93,7 @@ function SearchMediaPage() {
 
   // Calculate total pages
   const totalPages =
-    searchMediaResults ? Math.min(searchMediaResults.total_pages, 500) : 0; // Handle TMDB limit if applicable
+    searchMediaResults ? Math.min(searchMediaResults.total_pages ?? 0, 500) : 0; // Handle TMDB limit if applicable
   const items = searchMediaResults?.results ?? []; // Get the items array
 
   return (
