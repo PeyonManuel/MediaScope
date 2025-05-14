@@ -4,6 +4,7 @@ import React from 'react';
 import { Link } from '@tanstack/react-router';
 import styles from './MediaCard.module.css';
 import { MediaItem } from '../../../../../../shared/infraestructure/lib/types/media.types';
+import { bookImagePlaceholder } from '../../../../../../shared/infraestructure/utils/placeholders';
 
 interface MediaCardProps {
   // Accepts the normalized MediaItem which includes both
@@ -12,7 +13,7 @@ interface MediaCardProps {
 }
 
 // Placeholder image
-const placeholderImage = '/placeholder-poster.png'; // Provide a local placeholder
+const placeholderImage = bookImagePlaceholder; // Provide a local placeholder
 
 // Use React.memo for performance optimization when rendering lists
 const MediaCard: React.FC<MediaCardProps> = React.memo(({ item }) => {

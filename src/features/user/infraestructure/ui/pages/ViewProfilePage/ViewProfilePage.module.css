@@ -1,5 +1,6 @@
 /* src/pages/ViewProfilePage/ViewProfilePage.module.css */
 /* Consolidated styles using global variables from index.css */
+/* Added Tabs and updated Stats */
 
 .profilePageContainer {
   padding: var(--header-height, 4rem) 5% 4rem 5%;
@@ -10,22 +11,20 @@
 
 /* --- Profile Header --- */
 .profileHeader {
+  /* ... same as before ... */
   display: flex;
-  flex-direction: column; /* Stack avatar/info on small screens */
+  flex-direction: column;
   gap: 1.5rem;
   margin-bottom: 3rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border-primary);
-
+  padding-bottom: 1rem;
   @media (min-width: 768px) {
-    /* Row layout on larger screens */
     flex-direction: row;
     align-items: flex-start;
     gap: 2rem;
   }
 }
-
 .profileAvatarContainer {
+  /* ... same as before ... */
   flex-shrink: 0;
   width: 100px;
   height: 100px;
@@ -34,15 +33,13 @@
   border: 3px solid var(--border-primary);
   background-color: var(--bg-input-disabled);
   box-shadow: var(--shadow-lg);
-  margin: 0 auto; /* Center on small screens */
-
+  margin: 0 auto;
   @media (min-width: 768px) {
     width: 120px;
     height: 120px;
-    margin: 0; /* Reset margin */
+    margin: 0;
   }
 }
-
 .profileAvatar {
   display: block;
   width: 100%;
@@ -61,25 +58,25 @@
   width: 60%;
   height: 60%;
 }
-
 .profileInfo {
+  /* ... same as before ... */
   flex-grow: 1;
-  text-align: center; /* Center text on small screens */
+  text-align: center;
   @media (min-width: 768px) {
-    text-align: left; /* Align left on larger screens */
+    text-align: left;
     padding-top: 0.5rem;
   }
 }
-
 .profileUsername {
+  /* ... same as before ... */
   font-size: 2rem;
   font-weight: 700;
   color: var(--text-heading);
   margin: 0 0 0.5rem 0;
   line-height: 1.2;
 }
-
 .profileBio {
+  /* ... same as before ... */
   font-size: 1rem;
   color: var(--text-secondary);
   line-height: 1.6;
@@ -94,18 +91,14 @@
     margin-right: 0;
   }
 }
-
 /* Stats Container Styles */
 .statsContainer {
   display: flex;
   justify-content: center;
-  gap: 1.5rem 2rem;
+  gap: 1rem 1.5rem; /* Adjusted gap */
   flex-wrap: wrap;
   margin-top: 1rem;
-  margin-bottom: 1.5rem;
-  padding-top: 1rem;
   border-top: 1px solid var(--border-primary);
-
   @media (min-width: 768px) {
     justify-content: flex-start;
     border-top: none;
@@ -117,19 +110,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 80px;
   @media (min-width: 768px) {
     align-items: flex-start;
   }
 }
 .statValue {
-  font-size: 1.25rem;
+  font-size: 1.1rem; /* Slightly smaller */
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.2;
 }
 .statLabel {
-  font-size: 0.75rem;
+  font-size: 0.7rem; /* Slightly smaller */
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -137,6 +129,7 @@
 
 /* Edit Profile Button Styles */
 .editProfileButton {
+  /* ... same as before ... */
   display: inline-block;
   margin-top: 1rem;
   padding: 0.4rem 1rem;
@@ -160,25 +153,69 @@
   box-shadow: var(--button-focus-shadow);
 }
 
-/* --- Watched Section --- */
-.watchedSection {
+/* --- Logged/Watched Section --- */
+.loggedSection {
   margin-top: 2rem;
+  h2 {
+  }
 }
 
 .sectionTitle {
+  /* Reused for section title */
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--text-heading);
   margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border-primary);
+  text-align: left;
 }
 
-/* --- Filter Controls Styles --- */
+/* --- NEW: Media Type Tabs Styles --- */
+.mediaTypeTabs {
+  display: flex;
+  flex-wrap: wrap; /* Allow tabs to wrap */
+  gap: 0.5rem; /* Gap between tabs */
+  margin-bottom: 1.5rem; /* Space below tabs */
+  border-bottom: 1px solid var(--border-primary); /* Separator line */
+}
+
+.tabButton {
+  padding: 0.6rem 1rem;
+  margin-bottom: -1px; /* Overlap border-bottom */
+  border: 1px solid transparent; /* Start transparent */
+  border-bottom: none; /* Remove bottom border initially */
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0; /* Round top corners */
+  transition: all 0.2s ease-out;
+  white-space: nowrap;
+}
+
+.tabButton:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-input-disabled); /* Subtle hover */
+}
+
+.tabButton.active {
+  color: var(--brand-pink-default); /* Use brand color for active tab */
+  border-color: var(--border-primary) var(--border-primary) var(--bg-page)
+    var(--border-primary); /* Match borders, cut out bottom */
+  background-color: var(--bg-page); /* Match page background */
+  font-weight: 600;
+}
+/* --- END Tabs Styles --- */
+
+/* Filter Controls Styles */
 .controlsContainer {
+  height: 6rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem 1.5rem;
   padding: 1rem 1.5rem;
   background-color: var(--bg-form);
@@ -201,6 +238,12 @@
   font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  svg {
+    height: 1.2rem;
+  }
 }
 .checkboxGroup label {
   font-weight: normal;
@@ -217,15 +260,11 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
-  min-width: 150px;
+  min-width: 130px;
   cursor: pointer;
 }
-.searchInput::placeholder,
-.selectInput::placeholder {
-  color: var(--text-placeholder);
-}
-.searchInput:focus,
-.selectInput:focus {
+.selectInput:focus,
+.searchInput:focus {
   border-color: var(--border-focus);
   outline: none;
   box-shadow: var(--ring-focus-shadow);
@@ -248,12 +287,12 @@
   outline: none;
   box-shadow: var(--ring-focus-shadow);
 }
-/* --- End Filter Controls --- */
 
 .listContainer {
   margin-top: 1rem;
 }
 
+/* Messages */
 .loadingMessage,
 .errorMessage,
 .infoMessage {
@@ -262,8 +301,19 @@
   font-size: 1.1rem;
   color: var(--text-secondary);
 }
-
 .errorMessage {
   color: var(--text-error);
   font-weight: 500;
+}
+.noResultsMessage strong,
+.infoMessage strong {
+  color: var(--text-primary);
+}
+
+/* Pagination Wrapper */
+.paginationWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+  padding-bottom: 1rem;
 }

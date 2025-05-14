@@ -8,23 +8,20 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 1rem 0.75rem;
+  grid-auto-rows: 1fr; /* <-- Add this line */
 
   @media (min-width: 640px) {
-    /* sm */
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 1.25rem 1rem;
   }
   @media (min-width: 1024px) {
-    /* lg */
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
   @media (min-width: 1280px) {
-    /* xl */
     gap: 1.5rem 1.25rem;
   }
 }
 
-/* --- Individual Movie Card --- */
 .movieCard {
   display: flex;
   flex-direction: column;
@@ -32,6 +29,10 @@
   border-radius: var(--border-radius-sm);
   transition: transform 0.15s ease-out;
   position: relative;
+
+  /* Ensure it fills the grid cell */
+  width: 100%;
+  height: 100%;
 }
 
 /* --- Poster Link (Main Visual Element) --- */
@@ -182,4 +183,31 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.skeletonCard {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden; /* Hide overflowing pulse */
+  background-color: var(--bg-input-disabled); /* Use a subtle background */
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeletonImage {
+  width: 100%;
+  aspect-ratio: 2 / 3; /* Match poster aspect ratio */
+  background-color: var(--border-primary); /* Slightly darker color */
+  margin-bottom: 0.5rem;
+}
+
+.skeletonText {
+  height: 0.8em; /* Simulate text line height */
+  background-color: var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  margin: 0.25rem 0.25rem 0.5rem 0.25rem; /* Add some margin */
+}
+
+.skeletonTextShort {
+  width: 60%; /* Make the second line shorter */
 }

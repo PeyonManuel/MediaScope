@@ -1,191 +1,288 @@
 import {
-  GoogleBooksApiResponse,
-  GoogleBooksVolumeItem,
   MediaItem,
   MediaListApiResponse,
+  MediaType,
+  OpenLibrarySearchDoc,
+  OpenLibrarySearchResponse,
+  OpenLibraryWork,
 } from './types/media.types';
 
-const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY; // Get from .env
-const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
+const BASE_URL = 'https://openlibrary.org';
+const COVER_BASE_URL = 'https://covers.openlibrary.org/b'; // Base URL for covers
+
+// --- Image URL Helper ---
+// Sizes: S, M, L
+const getOpenLibraryCoverUrl = (
+  coverId?: number | string | null,
+  size: 'S' | 'M' | 'L' = 'L'
+): string | null => {
+  if (!coverId) return null;
+  return `${COVER_BASE_URL}/id/${coverId}-${size}.jpg`;
+};
 
 // --- Normalization Helper ---
-// Takes a raw Google Books Volume item and returns a standardized MediaItem
-function normalizeGoogleBook(item: GoogleBooksVolumeItem): MediaItem | null {
-  // Basic check for essential data
-  if (!item?.id || !item?.volumeInfo?.title) return null;
+// Takes a search document and normalizes it
+// For full details, a separate call to /works/{workId}.json might be needed
+function normalizeOpenLibraryDoc(doc: OpenLibrarySearchDoc): MediaItem | null {
+  if (!doc || !doc.key || !doc.title) return null;
 
-  const vi = item.volumeInfo;
-  // Determine media type based on categories (simple check)
-  const mediaType =
-    vi.categories?.some((cat) => /comics|graphic novels/i.test(cat)) ?
+  // Extract Work ID from key like "/works/OL45883W"
+  const workIdMatch = doc.key.match(/\/works\/(OL\d+W)/);
+  if (!workIdMatch) return null; // Only process works for now
+  const externalId = workIdMatch[1]; // e.g., OL45883W
+
+  // Determine type (basic guess)
+  const mediaType: MediaType =
+    doc.subject?.some((s) => /comics|graphic novels/i.test(s)) ?
       'manga'
     : 'book';
-  const id = `${mediaType}-${item.id}`; // Use composite ID
+  const id = `${mediaType}-${externalId}`;
 
-  // Normalize release date (YYYY, YYYY-MM, YYYY-MM-DD)
-  let releaseDate = null;
-  if (vi.publishedDate) {
-    if (/^\d{4}$/.test(vi.publishedDate)) {
-      // Year only
-      releaseDate = `${vi.publishedDate}-01-01`;
-    } else if (/^\d{4}-\d{2}$/.test(vi.publishedDate)) {
-      // Year-Month
-      releaseDate = `${vi.publishedDate}-01`;
-    } else {
-      // Assume full date or other format, take first part
-      releaseDate = vi.publishedDate.split('T')[0];
-    }
-  }
+  // Basic details from search result
+  const title = doc.title;
+  const authors = doc.author_name ?? [];
+  const releaseYear = doc.first_publish_year ?? null;
+  const releaseDate = releaseYear ? `${releaseYear}-01-01` : null; // Only year usually available in search
+  const posterUrl = getOpenLibraryCoverUrl(doc.cover_i, 'L');
+  const genres = doc.subject?.slice(0, 5) ?? []; // Take first few subjects as genres
 
-  // Normalize rating (Google Books uses 0-5, convert to 0-10)
+  // Rating needs checking - OpenLibrary ratings are less standard
   const averageScore =
-    vi.averageRating ? Math.round(vi.averageRating * 2) : null;
+    doc.ratings_average ? Math.round(doc.ratings_average * 2) : null; // Assume 0-5 -> 0-10?
+  const voteCount = doc.ratings_count ?? null;
 
-  // Extract external links (ISBNs, Google links)
-  const externalLinks = [];
-  if (vi.infoLink)
-    externalLinks.push({ site: 'Google Books', url: vi.infoLink });
-
-  // Return the normalized MediaItem structure
   return {
     id: id,
-    externalId: item.id, // Google Books ID is a string
+    externalId: externalId, // Open Library Work ID
     mediaType: mediaType,
-    title: vi.title,
-    originalTitle: null, // Google Books API doesn't typically provide a separate original title
-    posterUrl:
-      vi.imageLinks?.thumbnail || vi.imageLinks?.smallThumbnail || null,
-    backdropUrl: vi.imageLinks?.thumbnail || null, // Use larger images as backdrop fallback
-    description: vi.description || null,
+    title: title,
+    posterUrl: posterUrl,
     releaseDate: releaseDate,
-    genres: vi.categories || [],
+    genres: genres,
+    authors: authors,
     averageScore: averageScore,
-    scoreSource: 'Google Books',
-    voteCount: vi.ratingsCount ?? null, // Use ratingsCount if available
-    pageCount: vi.pageCount ?? null,
-    authors: vi.authors || [], // Authors array
-    publishers: vi.publisher ? [vi.publisher] : [], // Publisher string to array
-    status: 'Published', // Assume published if found via API
-    // originalLanguage: vi.language, // e.g., 'en'
-    // externalLinks: externalLinks.length > 0 ? externalLinks : null,
-    // Fields less relevant to books often set to null/empty
+    scoreSource: 'Open Library',
+    voteCount: voteCount,
+    // --- Fields likely needing details fetch ---
+    originalTitle: null,
+    backdropUrl: null,
+    screenshots: null,
+    description: null,
+    // storyline: null,
     tagline: null,
-    // runtimeMinutes: null,
-    // popularity: null, // No direct popularity metric
+    status: null,
+    // originalLanguage: null,
+    // countryOfOrigin: [],
+    // tags: [],
+    // themes: [],
     // ageRating: null,
+    // metacriticScore: null,
+    // homepage: null,
+    externalLinks: null,
+    // directors: [],
+    artists: [],
+    developers: [],
+    publishers: doc.publisher ?? [],
+    production_companies: null,
+    // primaryVideo: null,
+    videos: null,
+    // runtimeMinutes: null,
+    // numberOfSeasons: null,
+    // numberOfEpisodes: null,
+    pageCount: doc.number_of_pages_median ?? null,
+    chapters: null,
+    volumes: null,
+    // playtimeHours: null,
+    platforms: [],
+    // popularity: null,
+    slug: null,
   };
 }
 
 // --- API Fetch Helper ---
-// Handles fetching from Google Books API, accepting query params and optional path
-async function fetchGoogleBooks(params = {}, path = '') {
-  if (!API_KEY) {
-    console.error('Google Books API Key is missing!');
-    throw new Error('Google Books API Key missing');
-  }
-  // Ensure path starts with '/' if provided
-  const pathSegment =
-    path && path.startsWith('/') ? path
-    : path ? `/${path}`
-    : '';
-  const urlParams = new URLSearchParams({ key: API_KEY });
-
-  // Append other parameters, ensuring values are strings
+async function fetchOpenLibrary<T>(
+  endpoint: string,
+  params: Record<string, string | number> = {}
+): Promise<T> {
+  const urlParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       urlParams.append(key, String(value));
     }
   });
-
-  const url = `${BASE_URL}${pathSegment}?${urlParams.toString()}`;
-  console.log('Fetching Google Books URL:', url);
-
+  // Always request JSON
+  const url = `${BASE_URL}${endpoint}.json?${urlParams.toString()}`;
+  console.log('Fetching Open Library URL:', url);
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      const errorBody = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      console.error(`Google Books API error (${response.status}):`, errorBody);
-      // Extract error message if possible
-      const message =
-        errorBody?.error?.message || errorBody?.message || response.statusText;
-      throw new Error(`Google Books request failed: ${message}`);
+      const errorText = await response.text();
+      console.error(
+        `Open Library API error (${response.status}): ${errorText}`
+      );
+      throw new Error(
+        `Open Library request failed: ${response.statusText || errorText}`
+      );
     }
-    return await response.json(); // Return parsed JSON
+    return (await response.json()) as T;
   } catch (error) {
     console.error(
-      `Network or parsing error fetching Google Books URL "${url}":`,
+      `Network or parsing error fetching from Open Library endpoint "${endpoint}":`,
       error
     );
-    throw error; // Re-throw
+    throw error;
   }
 }
 
-// --- Adapter Functions (Exported) ---
-
-// Define MediaListApiResponse using the generic MediaItem for consistency
-// interface MediaListApiResponse { page?: number; results: MediaItem[]; total_pages?: number; total_results?: number; } // Assuming MediaItem is imported
+// --- Adapter Functions ---
 
 // Search Books/Manga
-export const searchMediaGoogleBooks = async (
+export const searchMediaOpenLibrary = async (
   query: string,
-  page = 1,
-  maxResults = 20
+  page: number = 1,
+  limit: number = 20
 ): Promise<MediaListApiResponse> => {
   if (!query) return { page: 1, results: [], total_pages: 0, total_results: 0 };
-  const pageIndex = Math.max(0, page - 1);
-  const apiResponse = await fetchGoogleBooks({
-    q: query,
-    startIndex: pageIndex * maxResults,
-    maxResults: maxResults,
-    // projection: 'lite' // Use 'lite' for potentially faster search results
-  });
-  const normalizedResults: MediaItem[] = (apiResponse.items ?? [])
-    .map(normalizeGoogleBook)
-    .filter((item: GoogleBooksVolumeItem) => item !== null); // Filter out nulls from normalization
-  const totalPages =
-    apiResponse.totalItems ? Math.ceil(apiResponse.totalItems / maxResults) : 0;
+  // Open Library uses 'page' parameter directly
+  const apiResponse = await fetchOpenLibrary<OpenLibrarySearchResponse>(
+    '/search',
+    {
+      q: query,
+      page: page,
+      limit: limit,
+      // Optional: add fields param if needed, e.g., fields=key,title,author_name,cover_i,first_publish_year
+    }
+  );
+
+  const normalizedResults = (apiResponse.docs ?? [])
+    .map(normalizeOpenLibraryDoc) // Normalize search results
+    .filter((item): item is MediaItem => item !== null); // Type guard
+
+  const totalResults = apiResponse.numFound ?? 0;
+  const totalPages = totalResults ? Math.ceil(totalResults / limit) : 0;
+
   return {
     page: page,
     results: normalizedResults,
     total_pages: totalPages,
-    total_results: apiResponse.totalItems ?? 0,
+    total_results: totalResults,
   };
 };
 
-// Get Details for a specific Book/Manga by its Google Books Volume ID
-export const getMediaDetailsGoogleBooks = async (
-  id: string
+// Get Book/Manga Details by Open Library Work ID (e.g., OL45883W)
+export const getMediaDetailsOpenLibrary = async (
+  workId: string
 ): Promise<MediaItem | null> => {
-  if (!id) return null;
-  // Fetch details using the volume ID in the path
-  const item = await fetchGoogleBooks({}, `/${id}`); // Pass ID as path segment
-  return normalizeGoogleBook(item); // Normalize the single result
+  if (!workId) return null;
+  try {
+    const workDetails = await fetchOpenLibrary<OpenLibraryWork>(
+      `/works/${workId}`
+    );
+    if (!workDetails) return null;
+
+    // --- Refined Normalization using Work details ---
+    const mediaType: MediaType =
+      workDetails.subjects?.some((s) => /comics|graphic novels/i.test(s)) ?
+        'manga'
+      : 'book';
+    const id = `${mediaType}-${workId}`;
+    const title = workDetails.title;
+    const description =
+      typeof workDetails.description === 'string' ?
+        workDetails.description
+      : workDetails.description?.value;
+    const posterUrl = getOpenLibraryCoverUrl(workDetails.covers?.[0], 'L'); // Use first cover ID
+    let releaseDate = null;
+    if (workDetails.first_publish_date) {
+      // Often just year or textual date
+      const yearMatch = workDetails.first_publish_date.match(/\d{4}/);
+      if (yearMatch) releaseDate = `${yearMatch[0]}-01-01`;
+    }
+    const genres = workDetails.subjects?.slice(0, 10) ?? []; // Limit subjects
+
+    // Fetch author names (requires extra API calls - potentially slow)
+    // Placeholder: Use author keys for now or implement author fetching
+    const authors = workDetails.authors?.map((a) => a.author.key) ?? [];
+
+    // Construct MediaItem
+    const mediaItem: MediaItem = {
+      id: id,
+      externalId: workId,
+      mediaType: mediaType,
+      title: title,
+      posterUrl: posterUrl,
+      description: description || null,
+      releaseDate: releaseDate,
+      genres: genres,
+      authors: authors,
+      // Fill other fields with null/defaults or fetch more details (e.g., edition for page count)
+      originalTitle: null,
+      backdropUrl: null,
+      screenshots: null,
+      // storyline: null,
+      tagline: null,
+      status: 'Published',
+      // originalLanguage: null,
+      // countryOfOrigin: [],
+      // tags: [],
+      // themes: [],
+      averageScore: null,
+      scoreSource: 'Open Library',
+      voteCount: null,
+      // popularity: null,
+      // ageRating: null,
+      // metacriticScore: null,
+      // homepage: null,
+      externalLinks: [
+        {
+          site: 'Open Library',
+          url: `https://openlibrary.org/works/${workId}`,
+          category: 'official_site',
+        },
+      ],
+      // directors: [],
+      artists: [],
+      developers: [],
+      publishers: [],
+      production_companies: null,
+      // primaryVideo: null,
+      videos: null,
+      // runtimeMinutes: null,
+      // numberOfSeasons: null,
+      // numberOfEpisodes: null,
+      pageCount: null,
+      chapters: null,
+      volumes: null,
+      // playtimeHours: null,
+      platforms: [],
+    };
+
+    // Optional: Fetch first edition details for page count/ISBNs (adds another API call)
+    // const editionsResponse = await fetchOpenLibrary(`/works/${workId}/editions`, { limit: 1 });
+    // const firstEdition = editionsResponse?.entries?.[0];
+    // if (firstEdition?.number_of_pages) mediaItem.pageCount = firstEdition.number_of_pages;
+    // Add ISBNs to externalLinks...
+
+    return mediaItem;
+  } catch (error) {
+    console.error(`Error fetching Open Library details for ${workId}:`, error);
+    return null; // Return null on error
+  }
 };
 
-// Get Newest Books (example implementation)
-export const getNewestBooks = async (
-  page = 1,
-  maxResults = 20
+// Get Newest/Popular Books (Open Library doesn't have simple endpoints for this)
+// You might query subjects like 'new releases' or sort search results by date,
+// but it's less direct than other APIs.
+export const getNewestBooksOpenLibrary = async (
+  page: number = 1
 ): Promise<MediaListApiResponse> => {
-  const pageIndex = Math.max(0, page - 1);
-  // Using a broad subject search combined with newest ordering
-  const apiResponse = await fetchGoogleBooks({
-    q: 'subject:fiction', // Example broad query, adjust as needed
-    orderBy: 'newest',
-    startIndex: pageIndex * maxResults,
-    maxResults: maxResults,
-  });
-  const normalizedResults: MediaItem[] = (apiResponse.items ?? [])
-    .map(normalizeGoogleBook)
-    .filter((item: GoogleBooksVolumeItem) => item !== null);
-  const totalPages =
-    apiResponse.totalItems ? Math.ceil(apiResponse.totalItems / maxResults) : 0;
-  return {
-    page: page,
-    results: normalizedResults,
-    total_pages: totalPages, // May be inaccurate for broad queries
-    total_results: apiResponse.totalItems ?? 0,
-  };
+  console.warn(
+    "Open Library doesn't have a direct 'newest' endpoint. Using recent subject search as proxy."
+  );
+  // Example: Search for books published recently in a subject
+  // This requires knowing subject keys or using text search
+  return searchMediaOpenLibrary(
+    'subject:"new books" OR subject:"fiction"',
+    page
+  ); // Example proxy
 };

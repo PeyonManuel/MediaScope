@@ -4,17 +4,18 @@
 import React from 'react';
 import { Link } from '@tanstack/react-router';
 // Import the generic MediaItem type
-import styles from './UserMediaLogList.module.css';
-import { MediaItem } from '../../../../../../shared/infraestructure/lib/types/media.types';
+import styles from '../userMediaLogList/UserMediaLogList.module.css';
 import { HeartIconFilled } from '../../../../../../shared/infraestructure/components/ui/svgs';
 import StarRating from '../../../../../item/infraestructure/ui/components/StarRating/StarRating';
+import { UserMediaLogCardType } from '../userMediaLogList/UserMediaLogList';
+import { bookImagePlaceholder } from '../../../../../../shared/infraestructure/utils/placeholders';
 
 interface UserMediaLogCardProps {
-  item: MediaItem & { isLoading?: boolean; isError?: boolean }; // Accepts the combined MediaItem + loading/error flags
+  item: UserMediaLogCardType;
 }
 
 // Placeholder image
-const placeholderImage = '/placeholder-poster.png';
+const placeholderImage = bookImagePlaceholder;
 
 // Use React.memo for performance
 const UserMediaLogCard: React.FC<UserMediaLogCardProps> = React.memo(
@@ -26,9 +27,9 @@ const UserMediaLogCard: React.FC<UserMediaLogCardProps> = React.memo(
       title,
       posterUrl, // Use normalized URL
       releaseDate,
-      userRating, // User's rating
-      userLiked, // User's like status
-      watchedDate, // User's watched date
+      rating, // User's rating
+      liked, // User's like status
+      watched_date, // User's watched date
       isLoading, // Loading state for details
       isError, // Error state for details
     } = item;
@@ -36,7 +37,6 @@ const UserMediaLogCard: React.FC<UserMediaLogCardProps> = React.memo(
     const detailUrl = `/${mediaType}/${externalId}`; // Generic link
     const displayImageUrl = posterUrl || placeholderImage;
     const releaseYear = releaseDate ? new Date(releaseDate).getFullYear() : '';
-
     return (
       // Use the existing CSS classes defined in the module
       <div className={styles.movieCard}>
@@ -75,22 +75,19 @@ const UserMediaLogCard: React.FC<UserMediaLogCardProps> = React.memo(
           )}
 
           <div className={styles.indicators}>
-            {userRating !== null && userRating !== undefined && (
+            {rating !== null && rating !== undefined && (
               <div
-                className={styles.userRating}
-                title={`Your Rating: ${userRating}/10`}>
-                <StarRating disabled={true} currentRating={userRating} />
+                className={styles.rating}
+                title={`Your Rating: ${rating}/10`}>
+                <StarRating disabled={true} currentRating={rating} />
               </div>
             )}
-            {userLiked === true && (
+            {liked === true && (
               <span className={styles.likedIndicator} title="Liked">
                 <HeartIconFilled />
               </span>
             )}
           </div>
-          {watchedDate && (
-            <span className={styles.watchedDate}>Watched: {watchedDate}</span>
-          )}
         </div>
       </div>
     );

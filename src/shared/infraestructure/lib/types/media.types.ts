@@ -1,10 +1,13 @@
 // --- Common Normalized Media Item Structure ---
+
+import { UserMediaLog } from '../../../../features/item/domain';
+
 // This is the shape we want to use throughout the UI and application layer
-export type MediaType = 'movie' | 'tv' | 'book' | 'game' | 'manga';
+export type MediaType = 'movie' | 'tv' | 'book' | 'manga';
 
 // --- Placeholder types for nested data (define these more specifically) ---
 // These should ideally match the structure returned by your normalization functions
-interface MediaCreditPerson {
+export interface MediaCreditPerson {
   id: number | string;
   name: string;
   character?: string; // For cast
@@ -12,7 +15,7 @@ interface MediaCreditPerson {
   profile_path?: string | null;
   credit_id?: string; // Often useful as key
 }
-interface MediaCredits {
+export interface MediaCredits {
   cast?: MediaCreditPerson[];
   crew?: MediaCreditPerson[];
 }
@@ -71,15 +74,7 @@ export interface MediaItem {
   artists?: string[]; // For manga
   director?: string | null; // For movie/tv (can be derived from credits.crew)
   externalLinks?: MediaExternalLink[] | null;
-
-  // --- User Interaction Data (Added when combining with user log) ---
-  userRating?: number | null;
-  userLiked?: boolean | null;
-  watchedDate?: string | null;
-  userReview?: string | null; // Renamed from 'review' in WatchedItem to avoid conflict
-  isOnBacklog?: boolean | null;
-  // Include original log item if needed for sorting etc.
-  // originalWatchedItem?: UserMediaLog;
+  originalWatchedItem?: UserMediaLog;
 }
 
 export interface MediaListApiResponse {
@@ -205,7 +200,6 @@ export interface TmdbListResponse {
 
 // Type for the full /movie/{id} response
 export interface MovieDetails extends TmdbMediaResult {
-  // Extends base list item
   belongs_to_collection: object | null; // Define further if needed
   budget: number;
   genres: Genre[]; // Details have full genre objects
@@ -259,33 +253,95 @@ export interface TvDetails extends TmdbMediaResult {
   videos?: VideosTmdb;
 }
 
-// Google Books API (Volume Item - Simplified)
-export interface GoogleBooksVolumeItem {
-  id: string; // String ID
-  volumeInfo: {
-    title: string;
-    subtitle?: string;
-    authors?: string[];
-    publisher?: string;
-    publishedDate?: string; // Can be YYYY, YYYY-MM, YYYY-MM-DD
-    description?: string;
-    pageCount?: number;
-    categories?: string[]; // Genres
-    averageRating?: number; // Scale 1-5
-    ratingsCount?: number;
-    imageLinks?: {
-      smallThumbnail?: string;
-      thumbnail?: string; // Use this for poster
-    };
-    language?: string;
-    infoLink?: string;
-  };
-  // ... other fields if needed
+// src/types/openlibrary.types.ts (Example path)
+
+// --- Open Library Search Result Document ---
+export interface OpenLibrarySearchDoc {
+  key: string; // Work key, e.g., "/works/OL45883W"
+  type: string; // e.g., "work"
+  title: string;
+  // Titles can also be objects in some cases
+  // title_suggest?: string;
+
+  // Authors
+  author_key?: string[];
+  author_name?: string[];
+
+  // Publication Info
+  first_publish_year?: number;
+  publish_date?: string[]; // Array of dates as strings
+  publisher?: string[];
+
+  // Identifiers (arrays)
+  isbn?: string[];
+  lccn?: string[];
+  oclc?: string[];
+  olid?: string; // Edition OLID (sometimes present)
+
+  // Cover
+  cover_i?: number; // Cover ID (integer)
+  cover_edition_key?: string; // OLID of edition with cover
+
+  // Other potentially useful fields
+  subject?: string[]; // Genres/subjects/tags
+  language?: string[];
+  number_of_pages_median?: number;
+  first_sentence?: string[];
+  ratings_average?: number; // Scale seems variable, often 1-5? Needs verification.
+  ratings_count?: number;
+  // ... many other fields available
 }
-export interface GoogleBooksApiResponse {
-  kind: string;
-  totalItems: number;
-  items?: GoogleBooksVolumeItem[]; // Array might be missing if no results
+
+// --- Open Library Search Response ---
+export interface OpenLibrarySearchResponse {
+  numFound: number;
+  start: number;
+  numFoundExact: boolean;
+  docs: OpenLibrarySearchDoc[];
+  num_found: number; // Duplicate?
+  q: string;
+  offset: number | null;
+}
+
+// --- Open Library Work/Edition Details (Simplified) ---
+// Fetched from endpoints like /works/{OLID}.json or /books/{OLID}.json
+export interface OpenLibraryWork {
+  key: string; // e.g., "/works/OL45883W"
+  title: string;
+  description?: string | { type: string; value: string }; // Can be string or object
+  subjects?: string[];
+  subject_places?: string[];
+  subject_people?: string[];
+  subject_times?: string[];
+  authors?: { author: { key: string } }[]; // Reference to author records
+  covers?: number[]; // Array of cover IDs
+  first_publish_date?: string; // Textual date
+  // ... many other fields
+}
+
+export interface OpenLibraryAuthor {
+  key: string; // e.g., "/authors/OL34184A"
+  name: string;
+  personal_name?: string;
+  birth_date?: string;
+  death_date?: string;
+  bio?: string | { type: string; value: string };
+  photos?: number[]; // Array of photo IDs
+  // ...
+}
+
+// Edition details might be fetched separately or included sometimes
+export interface OpenLibraryEdition {
+  key: string; // e.g., "/books/OL27320736M"
+  title: string;
+  authors?: { key: string }[]; // Reference author OLIDs
+  publishers?: string[];
+  publish_date?: string; // Textual date
+  number_of_pages?: number;
+  isbn_10?: string[];
+  isbn_13?: string[];
+  covers?: number[];
+  // ...
 }
 
 export interface SteamSpyApp {
@@ -327,6 +383,20 @@ export interface SteamSpyListResponse {
 // This endpoint returns a single SteamSpyApp object directly
 export type SteamSpyDetailResponse = SteamSpyApp;
 
+interface AniListCharacter {
+  role: {
+    node: {
+      id: string;
+      name: {
+        full: string;
+      };
+      image: {
+        large: string;
+      };
+    };
+  };
+}
+
 // AniList API (Media Object - Simplified, GraphQL response)
 // GraphQL responses are nested, define based on your query
 export interface AniListMedia {
@@ -354,9 +424,18 @@ export interface AniListMedia {
     color?: string;
   };
   bannerImage?: string;
+  characters: {
+    edges?: {
+      role: string;
+      node: { id: string; name: { full: string }; image: { large: string } };
+    }[];
+  };
   staff?: {
     // Example for authors/artists
-    edges?: { role: string; node: { name: { full: string } } }[];
+    edges?: {
+      role: string;
+      node: { id: string; name: { full: string }; image: { large: string } };
+    }[];
   };
   siteUrl?: string;
   // ... other fields based on your GraphQL query

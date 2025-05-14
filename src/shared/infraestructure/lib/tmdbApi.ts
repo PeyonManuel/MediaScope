@@ -88,13 +88,23 @@ function normalizeTmdbDetails(
   } else {
     baseItem.runtime = null; // Fallback
   }
+  const parsedCast = details.credits?.cast.map((person) => ({
+    ...person,
+    profile_path: getImageUrl(person.profile_path),
+  }));
+  const parsedCrew = details.credits?.crew.map((person) => ({
+    ...person,
+    profile_path: getImageUrl(person.profile_path),
+  }));
+  const parsedCredits = { cast: parsedCast, crew: parsedCrew };
+  const parsedProductionCompanies = details.production_companies.map(
+    (company) => ({ ...company, logo_path: getImageUrl(company.logo_path) })
+  );
   baseItem.status = details.status;
   baseItem.tagline = details.tagline;
-  baseItem.credits = details.credits; // Assuming credits structure matches MediaCredits
+  baseItem.credits = parsedCredits;
   baseItem.videos = details.videos; // Assuming videos structure matches MediaVideos
-  baseItem.production_companies = details.production_companies; // Assuming structure matches
-
-  // Add other details fields as needed...
+  baseItem.production_companies = parsedProductionCompanies; // Assuming structure matches
 
   return baseItem;
 }

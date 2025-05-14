@@ -3,6 +3,8 @@
 import {
   AniListApiResponse,
   AniListMedia,
+  MediaCreditPerson,
+  MediaCredits,
   MediaItem,
   MediaListApiResponse,
 } from './types/media.types';
@@ -14,20 +16,88 @@ const ANILIST_API_URL = 'https://graphql.anilist.co';
 const LIST_MANGA_QUERY = `
   query ($search: String, $page: Int, $perPage: Int, $sort: [MediaSort]) {
     Page(page: $page, perPage: $perPage) {
-      pageInfo { total currentPage lastPage hasNextPage perPage }
+      pageInfo {
+        total
+        currentPage
+        lastPage
+        hasNextPage
+        perPage
+      }
       media(search: $search, type: MANGA, sort: $sort) {
         id
-        title { romaji english native }
+        title {
+          romaji
+          english
+          native
+        }
         description(asHtml: false)
-        format status startDate { year month day }
-        chapters volumes genres averageScore meanScore popularity
-        coverImage { extraLarge large color }
-        bannerImage siteUrl
-        staff(sort: RELEVANCE, perPage: 1, page: 1) { edges { role node { name { full } } } }
+        format
+        status
+        startDate {
+          year
+          month
+          day
+        }
+        chapters
+        volumes
+        genres
+        averageScore
+        meanScore
+        popularity
+        coverImage {
+          extraLarge
+          large
+          color
+        }
+        bannerImage
+        siteUrl
+        staff(sort: [RELEVANCE, ROLE], perPage: 5, page: 1) { # Fetch up to 5 primary staff members
+          edges {
+            role
+            node {
+              id
+              name {
+                full
+                native
+              }
+              image { # Added image for staff
+                large
+                medium
+              }
+              siteUrl
+            }
+          }
+        }
+        characters(sort: [ROLE, RELEVANCE, FAVOURITES_DESC], perPage: 10, page: 1) { # Fetch top 10 main/relevant characters
+          edges {
+            role # e.g., MAIN, SUPPORTING
+            node {
+              id
+              name {
+                full
+                native
+              }
+              image { # Character image was already here
+                large
+                medium
+              }
+              description(asHtml: false)
+              siteUrl
+            }
+          }
+          pageInfo { # Pagination for characters
+            total
+            perPage
+            currentPage
+            lastPage
+            hasNextPage
+          }
+        }
       }
     }
   }
 `;
+
 // Query for details
 // --- FIXED: Replaced /* comment with # or removed ---
 const GET_MANGA_DETAILS_QUERY = `
@@ -52,7 +122,7 @@ const GET_MANGA_DETAILS_QUERY = `
       staff(sort: RELEVANCE) { # Get staff (authors/artists)
         edges {
           role # e.g., "Story & Art", "Story", "Art"
-          node { id name { full } }
+          node { id name { full } image { large } }
         }
       }
       characters(sort: [ROLE, RELEVANCE], perPage: 10) { # Get main characters
@@ -81,14 +151,39 @@ function normalizeAniListMedia(item: AniListMedia): MediaItem | null {
   if (item.startDate?.year) {
     releaseDate = `${item.startDate.year}-${String(item.startDate.month ?? 1).padStart(2, '0')}-${String(item.startDate.day ?? 1).padStart(2, '0')}`;
   }
-  const authors =
+  const authors: MediaCreditPerson[] =
     item.staff?.edges
-      ?.filter((e) => e.role === 'Story & Art' || e.role === 'Story')
-      .map((e) => e.node.name.full) ?? [];
-  const artists =
+      ?.filter((e) => e.role.includes('Story'))
+      .map((e) => ({
+        id: e.node.id,
+        name: e.node.name.full,
+        profile_path: e.node.image.large,
+        job: 'Story',
+      })) ?? [];
+  const artists: MediaCreditPerson[] =
     item.staff?.edges
-      ?.filter((e) => e.role === 'Art')
-      .map((e) => e.node.name.full) ?? [];
+      ?.filter((e) => e.role.includes('Art'))
+      .map((e) => {
+        return {
+          id: e.node.id,
+          name: e.node.name.full,
+          profile_path: e.node.image.large,
+          job: 'Art',
+        };
+      }) ?? [];
+  const characters: MediaCreditPerson[] =
+    item.characters.edges?.map((char) => {
+      return {
+        id: char.node.id,
+        name: char.node.name.full,
+        profile_path: char.node.image.large,
+        character: char.role,
+      };
+    }) ?? [];
+  const parsedCredits: MediaCredits = {
+    crew: [...authors, ...artists],
+    cast: characters,
+  };
   return {
     id: id,
     externalId: String(item.id),
@@ -106,8 +201,7 @@ function normalizeAniListMedia(item: AniListMedia): MediaItem | null {
     chapters: item.chapters,
     volumes: item.volumes,
     status: item.status,
-    authors: authors,
-    artists: artists,
+    credits: parsedCredits,
   };
 }
 

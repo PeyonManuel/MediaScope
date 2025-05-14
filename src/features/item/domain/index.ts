@@ -31,7 +31,7 @@ export interface MediaBacklogStatusResponse {
 export interface UserMediaLog {
   // Composite key fields
   user_id: string; // UUID of the user
-  media_type: MediaType; // 'movie', 'tv', 'book', 'game', 'manga'
+  media_type: MediaType; // 'movie', 'tv', 'book',  'manga'
   external_id: string; // ID from the source API (TMDB, RAWG, etc.)
 
   // User interaction data (nullable)
@@ -39,6 +39,7 @@ export interface UserMediaLog {
   liked: boolean | null; // If the user liked the item
   watched_date: string | null; // Date watched/read/played (YYYY-MM-DD)
   review: string | null; // User's review text
+  mediaData: MediaData;
 
   // Timestamps (managed by DB or set on creation/update)
   created_at: string; // ISO timestamp string
@@ -83,7 +84,12 @@ export interface GetMediaInput {
   externalId: string;
   // userId?: string; // Usually obtained from context
 }
-// --- Generic Port Interface ---
+
+export interface MediaData {
+  release_date: Date;
+  average_rating: number;
+  title: string;
+}
 
 export interface MediaInteractionPort {
   // Check if an item is in the user's backlog (previously watchlist)
@@ -113,6 +119,7 @@ export interface MediaInteractionPort {
     // userId: string;
     mediaType: MediaType;
     externalId: string;
+    mediaData: MediaData;
     logData: LogMediaData; // Contains rating, liked, review, watched_date etc.
   }): Promise<LogMediaSuccessResponse | ResponseError>;
 

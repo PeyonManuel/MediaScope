@@ -9,38 +9,48 @@ import { SearchMediaSuccessResponse } from '../../../../domain';
 import { searchMediaUseCase } from '../../../../useCases';
 import MediaList from '../../components/MediaList/MediaList';
 import Pagination from '../../../../../../shared/infraestructure/components/ui/pagination/Pagination';
+import { useRouter, useSearch } from '@tanstack/react-router';
+import { searchRoute } from '../../../../../../routes/routes';
 // --- Import generic types and components ---
 
 const DEBOUNCE_DELAY = 500; // Delay in ms before triggering search
 
 function SearchMediaPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  // --- NEW: State for media type filter ---
+  const router = useRouter();
+  const search = useSearch({ from: searchRoute.id });
+  const [searchTerm, setSearchTerm] = useState(
+    localStorage.getItem('debouncedSearchTerm') ?? ''
+  );
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(
+    localStorage.getItem('debouncedSearchTerm') ?? ''
+  );
+  const defaultPage = search.page ?? 1;
+  const [currentPage, setCurrentPage] = useState(defaultPage);
   const [selectedMediaType, setSelectedMediaType] = useState<
     MediaType | undefined
-  >(undefined); // Undefined means search all (if supported) or default
+  >((localStorage.getItem('selectedMediaSearch') as MediaType) ?? undefined); // Undefined means search all (if supported) or default
 
   // Debounce effect for search term
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm.trim());
-      setCurrentPage(1); // Reset page when search term changes
+      localStorage.setItem('debouncedSearchTerm', searchTerm.trim());
+
+      handlePageChange(defaultPage);
     }, DEBOUNCE_DELAY);
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
   // Reset page when media type filter changes
   useEffect(() => {
-    setCurrentPage(1);
+    handlePageChange(defaultPage);
   }, [selectedMediaType]);
 
   // TanStack Query using generic SearchMediaUseCase
   const searchResultsQueryKey = [
     'search',
     'media',
-    selectedMediaType ?? 'all', // Include type in key ('all' if undefined)
+    selectedMediaType, // Include type in key ('all' if undefined)
     debouncedSearchTerm,
     currentPage,
   ];
@@ -75,9 +85,18 @@ function SearchMediaPage() {
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    localStorage.setItem('searchTerm', event.target.value);
   };
 
   const handlePageChange = (newPage: number) => {
+    console.log(newPage);
+    router.navigate({
+      search: (prev) => ({
+        ...prev,
+        page: newPage,
+      }),
+      params: true,
+    });
     setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -87,8 +106,10 @@ function SearchMediaPage() {
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const value = event.target.value;
-    // Set to undefined if 'all' is selected, otherwise set to the MediaType
-    setSelectedMediaType(value === 'all' ? undefined : (value as MediaType));
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    localStorage.setItem('selectedMediaSearch', value);
+    setSelectedMediaType(value as MediaType);
   };
 
   // Calculate total pages
@@ -124,7 +145,6 @@ function SearchMediaPage() {
             <option value="movie">Movies</option>
             <option value="tv">TV Shows</option>
             <option value="book">Books</option>
-            <option value="game">Games</option>
             <option value="manga">Manga</option>
           </select>
         </div>
@@ -156,7 +176,7 @@ function SearchMediaPage() {
           )}
 
         {/* Results Display using MediaList */}
-        {items.length > 0 && (
+        {items.length > 0 && selectedMediaType === items[0].mediaType && (
           <>
             <MediaList
               items={items} // Pass generic MediaItem array

@@ -4,20 +4,19 @@ import LoginPage from '../features/authentication/infraestructure/pages/login/Lo
 import RegisterPage from '../features/authentication/infraestructure/pages/register/RegisterPage';
 import { rootRoute } from '../main';
 // import BrowsePage from '../shared/pages/browse/BrowsePage';
-import HomePage from '../shared/pages/home/HomePage';
+import HomePage from '../shared/infraestructure/pages/home/HomePage';
 import EditProfilePage from '../features/user/infraestructure/ui/pages/EditProfilePage/EditProfilePage';
 import ViewProfilePage from '../features/user/infraestructure/ui/pages/ViewProfilePage/ViewProfilePage';
 import ItemDetailsPage from '../features/item/infraestructure/ui/pages/ItemDetails/ItemDetailsPage';
 import SearchMediaPage from '../features/item/infraestructure/ui/pages/SearchMedia/SearchMediaPage';
 import { getMediaDetailsAniList } from '../shared/infraestructure/lib/anilistApi';
-import { getMediaDetailsGoogleBooks } from '../shared/infraestructure/lib/googleBooksApi';
 import { getMediaDetailsTmdb } from '../shared/infraestructure/lib/tmdbApi';
 import {
   MediaItem,
   MediaType,
 } from '../shared/infraestructure/lib/types/media.types';
 import { QueryClient } from '@tanstack/react-query';
-import { getMediaDetailsSteamSpy } from '../shared/infraestructure/lib/steamSpyApi';
+import { getMediaDetailsOpenLibrary } from '../shared/infraestructure/lib/googleBooksApi';
 
 export const browseSearchSchema = z.object({
   page: z.number().int().min(1).catch(1),
@@ -43,6 +42,9 @@ export const searchRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/search',
   component: SearchMediaPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    page: Number(search.page) || 1,
+  }),
 });
 
 export const viewProfileRoute = createRoute({
@@ -94,7 +96,7 @@ export const itemRoute = createRoute({
     const { queryClient } = context as AppRouterContext; // Get queryClient from context
 
     // Validate itemType
-    const validTypes: MediaType[] = ['movie', 'tv', 'game', 'book', 'manga'];
+    const validTypes: MediaType[] = ['movie', 'tv', 'book', 'manga'];
     if (!validTypes.includes(itemType as MediaType)) {
       console.error(`Invalid itemType in URL: ${itemType}`);
       // Throw an error that the errorComponent can catch
@@ -128,10 +130,8 @@ export const itemRoute = createRoute({
           case 'tv':
             // Ensure ID is numeric if needed by TMDB function (might not be necessary if adapter handles string)
             return getMediaDetailsTmdb(itemId, mediaType);
-          case 'game':
-            return getMediaDetailsSteamSpy(itemId);
           case 'book':
-            return getMediaDetailsGoogleBooks(itemId);
+            return getMediaDetailsOpenLibrary(itemId);
           case 'manga':
             // Ensure ID is numeric if needed by AniList function
             return getMediaDetailsAniList(itemId);

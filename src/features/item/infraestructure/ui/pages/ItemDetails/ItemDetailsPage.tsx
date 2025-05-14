@@ -14,7 +14,7 @@ import {
   removeMediaLogUseCase,
   toggleBacklogUseCase,
 } from '../../../../useCases';
-import { UserMediaLog } from '../../../../domain';
+import { MediaData, UserMediaLog } from '../../../../domain';
 import {
   HeartIcon,
   HeartIconFilled,
@@ -22,6 +22,7 @@ import {
 import { selectCurrentUser } from '../../../../../authentication/infraestructure/store/authSlice';
 import { useSelector } from 'react-redux';
 import StarRating from '../../components/StarRating/StarRating';
+import { personImagePlaceholder } from '../../../../../../shared/infraestructure/utils/placeholders';
 
 const formatCurrency = (amount: number | undefined | null): string => {
   /* ... */ return amount ? `$${amount.toLocaleString('en-US')}` : 'N/A';
@@ -64,6 +65,12 @@ function ItemDetailsPage() {
   const [isEditingReview, setIsEditingReview] = useState(false);
   const [reviewText, setReviewText] = useState('');
   // Fetch current user using query (no change)
+
+  const userLogListQueryKey = [
+    'user-log',
+    `list-${mediaType}`,
+    currentUser?.id,
+  ];
 
   // --- Queries for User Interaction State (Use generic keys) ---
   const backlogQueryKey = [
@@ -113,6 +120,7 @@ function ItemDetailsPage() {
     },
     enabled: !!currentUser && !!mediaType && !!externalId,
   });
+  console.log(mediaLogData);
   const mediaLog = mediaLogData?.mediaLog ?? null; // Extract the log item
 
   // --- Mutations (Use generic keys and use cases) ---
@@ -165,12 +173,16 @@ function ItemDetailsPage() {
     LogMediaVariables,
     LogMediaMutationContext
   >({
-    mutationFn: async (logData) => {
+    mutationFn: async ({ mediaData, ...logData }) => {
       if (!currentUser) throw new Error('User not logged in');
-      return logMediaItemUseCase.execute({ mediaType, externalId, logData });
+      return logMediaItemUseCase.execute({
+        mediaType,
+        externalId,
+        logData,
+        mediaData: mediaData as MediaData,
+      });
     },
     onMutate: async (variables) => {
-      /* ... optimistic update for mediaLogQueryKey ... */
       await queryClient.cancelQueries({ queryKey: mediaLogQueryKey });
       const previousMediaLog = queryClient.getQueryData<UserMediaLog | null>(
         mediaLogQueryKey
@@ -208,9 +220,8 @@ function ItemDetailsPage() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: mediaLogQueryKey });
       queryClient.invalidateQueries({ queryKey: backlogQueryKey }); // Invalidate backlog too?
-      // Invalidate the user's full list query as well
       queryClient.invalidateQueries({
-        queryKey: ['watched', 'list', currentUser?.id],
+        queryKey: userLogListQueryKey,
       });
     },
   });
@@ -260,17 +271,15 @@ function ItemDetailsPage() {
   const handleLikeToggle = () => {
     if (!currentUser) return;
     const currentLiked = mediaLog?.liked ?? false;
-    logMediaItemMutation.mutate({ liked: !currentLiked });
+    logMediaItemMutation.mutate({
+      mediaData,
+      liked: !currentLiked,
+    });
   };
 
   const handleRatingSet = (newRating: number | null) => {
     if (!currentUser) return;
-    // Skip rating for games based on our previous decision
-    if (mediaType === 'game') {
-      console.warn('Rating is disabled for games.');
-      return;
-    }
-    logMediaItemMutation.mutate({ rating: newRating });
+    logMediaItemMutation.mutate({ mediaData, rating: newRating });
   };
 
   const handleLogOrRemove = () => {
@@ -289,14 +298,17 @@ function ItemDetailsPage() {
       updates.liked = false;
       updates.rating = null;
       updates.review = null;
-      logMediaItemMutation.mutate(updates);
+      logMediaItemMutation.mutate({ mediaData, ...updates });
     }
   };
 
   const handleToggleReview = () => {
     if (!currentUser) return;
     if (isEditingReview) {
-      logMediaItemMutation.mutate({ review: reviewText.trim() || null });
+      logMediaItemMutation.mutate({
+        mediaData,
+        review: reviewText.trim() || null,
+      });
       setIsEditingReview(false);
     } else {
       setReviewText(mediaLog?.review || '');
@@ -321,7 +333,11 @@ function ItemDetailsPage() {
     genres = [],
     // Get user interaction data from the separate mediaLog query
   } = item; // Destructure from the generic MediaItem
-
+  const mediaData = {
+    release_date: new Date(releaseDate || ''),
+    average_rating: item.averageScore as number,
+    title: title,
+  };
   const releaseYear = releaseDate ? new Date(releaseDate).getFullYear() : 'N/A';
 
   const isOnBacklog = backlogStatus?.isOnBacklog ?? false;
@@ -370,7 +386,7 @@ function ItemDetailsPage() {
                   {toggleBacklogMutation.isPending ?
                     '...'
                   : isOnBacklog ?
-                    'On Backlog'
+                    'Backlogged'
                   : 'Backlog'}
                 </span>
               </button>
@@ -395,14 +411,13 @@ function ItemDetailsPage() {
               </button>
 
               {/* Rating Section - Conditionally disable for games */}
-              <div
-                className={`${styles.ratingSection} ${mediaType === 'game' ? styles.disabled : ''}`}>
+              <div className={`${styles.ratingSection}`}>
                 <span className={styles.ratingLabel}>Your Rating</span>
                 <StarRating
                   currentRating={currentRating}
                   onRate={handleRatingSet}
                   // Disable rating if action pending OR if it's a game
-                  disabled={isActionPending || mediaType === 'game'}
+                  disabled={isActionPending}
                 />
               </div>
 
@@ -513,10 +528,23 @@ function ItemDetailsPage() {
           {/* --- Render Type-Specific Sections --- */}
 
           {/* Cast (Movies/TV) */}
-          {(item.mediaType === 'movie' || item.mediaType === 'tv') &&
+          {item.mediaType !== 'book' &&
             item.credits?.cast &&
             item.credits.cast.length > 0 && (
-              <MediaCastList cast={item.credits.cast.slice(0, 10)} />
+              <MediaPeopleList
+                type={item.mediaType === 'manga' ? 'Characters' : 'Crew'}
+                people={item.credits.cast.slice(0, 10)}
+              />
+            )}
+
+          {/* Crew (Movies/TV) */}
+          {item.mediaType !== 'book' &&
+            item.credits?.crew &&
+            item.credits.crew.length > 0 && (
+              <MediaPeopleList
+                type={item.mediaType === 'manga' ? 'Staff' : 'Crew'}
+                people={item.credits.crew.slice(0, 10)}
+              />
             )}
 
           {/* Details Grid (Different content per type) */}
@@ -546,28 +574,6 @@ function ItemDetailsPage() {
               item.authors.length > 0 && (
                 <div>
                   <strong>Author(s):</strong> {item.authors.join(', ')}
-                </div>
-              )}
-            {/* Game Specific */}
-            {item.mediaType === 'game' &&
-              item.platforms &&
-              item.platforms.length > 0 && (
-                <div>
-                  <strong>Platforms:</strong> {item.platforms.join(', ')}
-                </div>
-              )}
-            {item.mediaType === 'game' &&
-              item.developers &&
-              item.developers.length > 0 && (
-                <div>
-                  <strong>Developer(s):</strong> {item.developers.join(', ')}
-                </div>
-              )}
-            {item.mediaType === 'game' &&
-              item.publishers &&
-              item.publishers.length > 0 && (
-                <div>
-                  <strong>Publisher(s):</strong> {item.publishers.join(', ')}
                 </div>
               )}
             {/* Manga Specific */}
@@ -615,22 +621,27 @@ function ItemDetailsPage() {
 }
 
 // --- Placeholder Sub-components (Implement these) ---
-const MediaCastList: React.FC<{ cast: any[] }> = ({ cast }) => (
+const MediaPeopleList: React.FC<{
+  people: any[];
+  type: 'Cast' | 'Crew' | 'Characters' | 'Staff';
+}> = ({ people, type }) => (
   <>
-    <h2 className={styles.sectionHeading}>Cast</h2>
+    <h2 className={styles.sectionHeading}>{type}</h2>
     <div className={styles.castList}>
       {' '}
       {/* Use styles from MovieDetails CSS */}
-      {cast.map((member: any) => (
+      {people.map((member: any) => (
         <div key={member.credit_id || member.id} className={styles.castMember}>
           <img
-            src={member.profile_path}
+            src={member.profile_path || personImagePlaceholder}
             alt={member.name}
             loading="lazy"
             className={styles.castImage}
           />
           <strong className={styles.castName}>{member.name}</strong>
-          <span className={styles.castCharacter}>{member.character}</span>
+          <span className={styles.castCharacter}>
+            {type === 'Cast' ? member.character : member.job}
+          </span>
         </div>
       ))}
     </div>

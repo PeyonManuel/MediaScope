@@ -1,4 +1,6 @@
 import {
+  GetUserDiaryInput,
+  GetUserDiaryResponse,
   GetUserLogInput,
   GetUserLogResponse,
   ProfileFormData,
@@ -23,11 +25,26 @@ export class UpdateUserProfileUseCase {
 export class GetUserLogUseCase {
   constructor(private readonly userPort: UserPort) {}
   async execute(input: GetUserLogInput): Promise<GetUserLogResponse> {
-    if (!input.profileId || !input.type) {
+    if (!input.profileId || !input.type || !input.page) {
       throw new Error('Input fields profileId and type required');
     }
     try {
       const response = await this.userPort.getUserLog(input);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+}
+
+export class GetUserDiaryUseCase {
+  constructor(private readonly userPort: UserPort) {}
+  async execute(input: GetUserDiaryInput): Promise<GetUserDiaryResponse> {
+    if (!input.profileId) {
+      throw new Error('Input field profileId is required');
+    }
+    try {
+      const response = await this.userPort.getUserDiary(input);
       return response;
     } catch (error) {
       throw error;

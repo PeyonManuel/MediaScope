@@ -1,0 +1,108 @@
+.filtergroup {
+  position: relative;
+  display: inline-block;
+  min-width: 12rem;
+}
+
+/* Button that triggers dropdown */
+.selectinput {
+  width: 100%;
+  background: var(--bg-input);
+  color: var(--text-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  box-shadow: none;
+  outline: none;
+  position: relative;
+}
+
+.selectinput:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--ring-focus-shadow);
+}
+
+.chevron {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+
+/* Dropdown menu */
+.dropdown {
+  position: absolute;
+  z-index: 100;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  width: 100%;
+  background: var(--bg-form);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem 0;
+  margin: 0;
+  list-style: none;
+  animation: fadeIn 0.15s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown > li {
+  padding: 0.5rem 1rem 0.25rem 1rem;
+}
+
+.sectionLabel {
+  font-size: 0.95em;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 0.25em;
+  margin-top: 0.25em;
+  text-align: left;
+}
+
+.dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 0.5rem;
+}
+
+.option {
+  padding: 0.35em 0.75em;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  color: var(--text-primary);
+  background: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  font-size: 0.98em;
+  text-align: left;
+}
+
+.option:hover,
+.option:focus {
+  background: var(--brand-pink-lightest);
+  color: var(--brand-pink-dark);
+}
+
+.active {
+  background: var(--brand-pink-default);
+  color: var(--text-button);
+}

@@ -7,12 +7,8 @@ import {
   searchMediaAniList,
 } from '../../../../shared/infraestructure/lib/anilistApi';
 import {
-  getMediaDetailsSteamSpy,
-  searchMediaSteamSpy,
-} from '../../../../shared/infraestructure/lib/steamSpyApi';
-import {
-  getMediaDetailsGoogleBooks,
-  searchMediaGoogleBooks,
+  getMediaDetailsOpenLibrary,
+  searchMediaOpenLibrary,
 } from '../../../../shared/infraestructure/lib/googleBooksApi';
 import { invokeEdgeFunction } from '../../../../shared/infraestructure/lib/supabaseClient';
 import {
@@ -153,10 +149,8 @@ export class SupabaseMediaAdapter implements MediaInteractionPort {
           return await searchMediaTmdb(query, page, 'movie');
         case 'tv':
           return await searchMediaTmdb(query, page, mediaType);
-        case 'game':
-          return await searchMediaSteamSpy(query, page);
         case 'book':
-          return await searchMediaGoogleBooks(query, page);
+          return await searchMediaOpenLibrary(query, page);
         case 'manga':
           return await searchMediaAniList(query, page);
         default:
@@ -198,13 +192,9 @@ export class SupabaseMediaAdapter implements MediaInteractionPort {
             mediaType
           );
           break;
-        case 'game':
-          // RAWG might use string slugs or numeric IDs
-          mediaItem = await getMediaDetailsSteamSpy(externalId);
-          break;
         case 'book':
           // Google Books uses string IDs
-          mediaItem = await getMediaDetailsGoogleBooks(externalId);
+          mediaItem = await getMediaDetailsOpenLibrary(externalId);
           break;
         case 'manga':
           // AniList uses numeric IDs

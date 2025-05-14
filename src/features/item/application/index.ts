@@ -7,6 +7,7 @@ import {
   LogMediaData,
   LogMediaSuccessResponse,
   MediaBacklogStatusResponse,
+  MediaData,
   MediaInteractionPort,
   MediaLogResponse,
   SearchMediaSuccessResponse,
@@ -32,7 +33,8 @@ export interface LogMediaItemInput {
   // userId?: string;
   mediaType: MediaType;
   externalId: string;
-  logData: LogMediaData; // Contains rating, liked, review, etc.
+  mediaData: MediaData;
+  logData: LogMediaData;
 }
 
 export interface SearchMediaInput {
@@ -125,11 +127,7 @@ export class LogMediaItemUseCase {
       throw new Error('Missing data for logging media item');
     }
     // Add specific validation for game ratings if needed
-    if (
-      input.mediaType === 'game' &&
-      input.logData.rating !== undefined &&
-      input.logData.rating !== null
-    ) {
+    if (input.logData.rating !== undefined && input.logData.rating !== null) {
       console.warn(
         'Attempting to log a numeric rating for a game, which might be ignored.'
       );

@@ -39,7 +39,6 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
   registerRoute,
-  // browseRoute,
   itemRoute,
   forgotPasswordRoute,
   searchRoute,

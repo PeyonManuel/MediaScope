@@ -1,17 +1,23 @@
 import { useQueries } from '@tanstack/react-query';
-import styles from './UserMediaLogList.module.css'; // Rename CSS module
+import styles from './UserMediaLogList.module.css';
 import { UserMediaLog } from '../../../../../item/domain';
 import { MediaItem } from '../../../../../../shared/infraestructure/lib/types/media.types';
 import { getMediaDetailsTmdb } from '../../../../../../shared/infraestructure/lib/tmdbApi';
-import { getMediaDetailsGoogleBooks } from '../../../../../../shared/infraestructure/lib/googleBooksApi';
 import { getMediaDetailsAniList } from '../../../../../../shared/infraestructure/lib/anilistApi';
 import { useMemo } from 'react';
-import MediaCard from '../../../../../item/infraestructure/ui/components/MediaCard/MediaCard';
-import { getMediaDetailsSteamSpy } from '../../../../../../shared/infraestructure/lib/steamSpyApi';
+import { getMediaDetailsOpenLibrary } from '../../../../../../shared/infraestructure/lib/googleBooksApi';
+import UserMediaLogCard from '../userMediaLogCard/UserMediaLogCard';
 
 interface UserMediaLogListProps {
   logItems: UserMediaLog[];
+  loadingList: boolean;
 }
+
+export type UserMediaLogCardType = Partial<MediaItem> &
+  Partial<UserMediaLog> & {
+    isLoading: boolean;
+    isError: boolean;
+  };
 
 const SkeletonCard = () => (
   <div className={styles.skeletonCard}>
@@ -20,12 +26,10 @@ const SkeletonCard = () => (
     <div className={`${styles.skeletonText} ${styles.skeletonTextShort}`}></div>
   </div>
 );
-
-function UserMediaLogList({ logItems }: UserMediaLogListProps) {
+function UserMediaLogList({ logItems, loadingList }: UserMediaLogListProps) {
   const mediaDetailQueries = useQueries({
     queries: logItems.map((item) => {
       const { media_type, external_id } = item; // Get type and ID from log item
-      console.log(logItems);
       return {
         // Query key now includes media type and external ID
         queryKey: ['media', 'details', media_type, external_id],
@@ -38,10 +42,8 @@ function UserMediaLogList({ logItems }: UserMediaLogListProps) {
               case 'tv':
                 // Ensure getMediaDetailsTmdb returns the normalized MediaItem
                 return await getMediaDetailsTmdb(external_id, media_type);
-              case 'game':
-                return await getMediaDetailsSteamSpy(external_id);
               case 'book':
-                return await getMediaDetailsGoogleBooks(external_id);
+                return await getMediaDetailsOpenLibrary(external_id);
               case 'manga':
                 return await getMediaDetailsAniList(external_id);
               default:
@@ -66,25 +68,19 @@ function UserMediaLogList({ logItems }: UserMediaLogListProps) {
     }),
   });
 
-  const displayItems: (MediaItem & {
-    isLoading?: boolean;
-    isError?: boolean;
-  })[] = useMemo(() => {
+  const displayItems: UserMediaLogCardType[] = useMemo(() => {
     return logItems.map((logItem, index) => {
       const queryResult = mediaDetailQueries[index];
       const fetchedDetails = queryResult?.data;
 
-      const baseDisplayItem: Partial<MediaItem> & {
-        isLoading: boolean;
-        isError: boolean;
-      } = {
+      const baseDisplayItem: UserMediaLogCardType = {
         id: `${logItem.media_type}-${logItem.external_id}`, // Create unique internal ID
         externalId: logItem.external_id,
         mediaType: logItem.media_type,
-        userRating: logItem.rating, // User's rating from log
-        userLiked: logItem.liked, // User's like status from log
-        watchedDate: logItem.watched_date, // User's watched date from log
-        userReview: logItem.review, // User's review from log
+        rating: logItem.rating, // User's rating from log
+        liked: logItem.liked, // User's like status from log
+        watched_date: logItem.watched_date, // User's watched date from log
+        review: logItem.review, // User's review from log
         isLoading: queryResult?.isLoading || queryResult?.isFetching,
         isError: queryResult?.isError,
         title: `Loading... (${logItem.external_id})`, // Default title while loading
@@ -98,17 +94,10 @@ function UserMediaLogList({ logItems }: UserMediaLogListProps) {
         return {
           ...baseDisplayItem,
           ...fetchedDetails, // Spread the fetched & normalized details
-          userRating: logItem.rating,
-          userLiked: logItem.liked,
-          watchedDate: logItem.watched_date,
-          userReview: logItem.review,
         };
       }
 
-      return baseDisplayItem as MediaItem & {
-        isLoading: boolean;
-        isError: boolean;
-      }; // Assert type
+      return baseDisplayItem;
     });
   }, [logItems, mediaDetailQueries]);
 
@@ -116,20 +105,24 @@ function UserMediaLogList({ logItems }: UserMediaLogListProps) {
     return null; // Handled by parent
   }
 
-  const showSkeletons = mediaDetailQueries.some((q) => q.isLoading);
-
+  const showSkeletons =
+    mediaDetailQueries.some((q) => q.isLoading) ||
+    displayItems.some((item) => item.title?.includes('Loading'));
   return (
     <div className={styles.listGrid}>
-      {showSkeletons &&
-        displayItems.every((item) => !item.title.startsWith('Loading')) && // Avoid showing skeletons if some data already loaded
-        Array.from({ length: logItems.length }).map((_, index) => (
-          <SkeletonCard
-            key={`skeleton-${logItems[index]?.external_id || index}`}
-          />
-        ))}
+      {(showSkeletons || loadingList) &&
+        Array.from({ length: 18 }).map((_, index) => {
+          return (
+            <SkeletonCard
+              key={`skeleton-${logItems[index]?.external_id || index}`}
+            />
+          );
+        })}
 
       {!showSkeletons &&
-        displayItems.map((item) => <MediaCard key={item.id} item={item} />)}
+        displayItems.map((item) => (
+          <UserMediaLogCard key={item.id} item={item} />
+        ))}
     </div>
   );
 }

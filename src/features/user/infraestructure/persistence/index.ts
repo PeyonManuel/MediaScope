@@ -1,4 +1,6 @@
 import {
+  GetUserDiaryInput,
+  GetUserDiaryResponse,
   GetUserLogInput,
   GetUserLogResponse,
   ProfileFormData,
@@ -27,7 +29,7 @@ export class SupabaseUserAdapter implements UserPort {
   }
 
   async getUserLog(input: GetUserLogInput): Promise<GetUserLogResponse> {
-    const functionNameWithParam = `get-user-log-list?userId=${encodeURIComponent(input.profileId)}&type=${input.type}`;
+    const functionNameWithParam = `get-user-log-list?userId=${encodeURIComponent(input.profileId)}&mediaType=${input.type}&page=${input.page}${input.sortBy ? '&sortBy=' + input.sortBy : ''}`;
     const response = await invokeEdgeFunction(functionNameWithParam, {
       method: 'GET',
     });
@@ -38,5 +40,24 @@ export class SupabaseUserAdapter implements UserPort {
       throw new Error(String(response.error));
     }
     return response as GetUserLogResponse;
+  }
+
+  async getUserDiary(input: GetUserDiaryInput): Promise<GetUserDiaryResponse> {
+    const response = await invokeEdgeFunction(
+      `get-user-diary-entries?userId=${input.profileId}&page=${input.page}${input.amount ? `&amount=${input.amount}` : ''}`,
+      {
+        method: 'GET',
+      }
+    );
+    if (!response || typeof response !== 'object') {
+      throw new Error('Invalid response format from get-user-log-list');
+    }
+    if ('error' in response && response.error) {
+      throw new Error(String(response.error));
+    }
+    return {
+      entries: response.data,
+      pagination: response.pagination,
+    } as GetUserDiaryResponse;
   }
 }
