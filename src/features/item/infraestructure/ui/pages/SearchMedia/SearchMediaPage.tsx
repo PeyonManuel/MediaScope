@@ -35,8 +35,7 @@ function SearchMediaPage() {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm.trim());
       localStorage.setItem('debouncedSearchTerm', searchTerm.trim());
-
-      handlePageChange(defaultPage);
+      handlePageChange(1);
     }, DEBOUNCE_DELAY);
     return () => clearTimeout(handler);
   }, [searchTerm]);
@@ -89,8 +88,8 @@ function SearchMediaPage() {
   };
 
   const handlePageChange = (newPage: number) => {
-    console.log(newPage);
     router.navigate({
+      to: '/search',
       search: (prev) => ({
         ...prev,
         page: newPage,
