@@ -57,7 +57,10 @@ function Header() {
               </Link>
             </li> */}
             <li>
-              <Link to="/search" activeProps={{ className: styles.active }}>
+              <Link
+                to="/search"
+                search={{ page: 1 }}
+                activeProps={{ className: styles.active }}>
                 Search
               </Link>
             </li>
